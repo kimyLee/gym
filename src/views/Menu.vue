@@ -162,19 +162,19 @@ export default defineComponent({
 
     &:nth-child(1) {
       .menu-img {
-        background-image: url(/menu1.png);
+        background-image: url(/dist/menu1.png);
         background-position: 0 -10px;
       }
     }
     &:nth-child(2) {
       .menu-img {
-        background-image: url(/menu2.png);
+        background-image: url(/dist/menu2.png);
       }
 
     }
     &:nth-child(3) {
       .menu-img {
-        background-image: url(/menu3.jpg);
+        background-image: url(/dist/menu3.jpg);
       background-size: 104% 104%;
       background-position: -3px -6px;
       }
@@ -182,7 +182,7 @@ export default defineComponent({
     }
     &:nth-child(4) {
       .menu-img {
-        background-image: url(/menu4.png);
+        background-image: url(/dist/menu4.png);
       }
 
     }

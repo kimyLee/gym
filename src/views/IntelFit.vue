@@ -326,7 +326,7 @@ export default defineComponent({
   height: 100px; /* 调整高度 */
   // background-color: #f0f0f0; /* 波浪线的背景色 */
   overflow: hidden;
-  background-image: url(/map-line.png);
+  background-image: url(/dist/map-line.png);
   background-size: 100% 100%;
   background-size: 75% 100%;
   background-position: -150px 0;
@@ -342,7 +342,7 @@ export default defineComponent({
   height: 100px; /* 调整高度 */
   // background-color: #f0f0f0; /* 波浪线的背景色 */
   overflow: hidden;
-  background-image: url(/map-line.png);
+  background-image: url(/dist/map-line.png);
   background-size: 100% 100%;
   background-size: 75% 100%;
   background-position: -150px 0;

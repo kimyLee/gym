@@ -104,11 +104,11 @@ export default defineComponent({
     // FireOutlined,
     // SyncOutlined,
     // BulbOutlined,
-    PlayCircleOutlined,
-    PauseCircleOutlined,
+    // PlayCircleOutlined,
+    // PauseCircleOutlined,
     ResultTitle,
     ResultDataItem,
-    SwapRightOutlined,
+    // SwapRightOutlined,
   },
 
   setup () {

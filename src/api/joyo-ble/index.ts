@@ -23,16 +23,6 @@ export async function bleUpgrade (data: { version: string }) {
   return handleSendCommand(params)
 }
 
-// // 清除升级状态
-// export async function bleResetUpgrade () {
-//   const params = generateReqParams(CommandType.UPGRADE, CommandOrder.RESET_UPGRADE, null, false)
-//   return handleSendCommandWithoutRsp(params)
-// }
-
-function sleep (ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
 // 控制灯效
 export async function bleSetLight (data: { colors: number[], bright: number }) { // todo: params ide提示
   try {
@@ -49,8 +39,6 @@ export async function bleSetLight (data: { colors: number[], bright: number }) {
       }
     }
     const params = generateReqParams(CommandType.CONTROL, CommandOrder.CONTROL_LIGHT, data)
-    // const params = [85, 161, 44, 178, 54, 0, 40, 207, 0, 243, 244, 245, 246, 247, 248, 249, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 240, 241, 242, 243, 244, 245, 246, 205, 204, 204, 61]
-    // handleSendCommandWithoutRsp(params)
     sendCommand(params)
   } catch (err) {
     console.log(err)
@@ -65,14 +53,6 @@ export async function clearAllLight () { // todo: params ide提示
   })
   sendCommand(params)
 }
-
-// 控制灯效动画
-// export async function bleSetLight (data: { colors: number[], bright: number }) { // todo: params ide提示
-//   const params = generateReqParams(CommandType.CONTROL, CommandOrder.CONTROL_LIGHT, data)
-//   // const params = [85, 161, 44, 178, 54, 0, 40, 207, 0, 243, 244, 245, 246, 247, 248, 249, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 240, 241, 242, 243, 244, 245, 246, 205, 204, 204, 61]
-//   // handleSendCommandWithoutRsp(params)
-//   sendCommand(params)
-// }
 
 // 使能摇晃
 export async function enableShake () { // todo: params ide提示

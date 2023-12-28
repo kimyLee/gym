@@ -1,66 +1,104 @@
 <template>
   <div class="header-nav">
-    <!-- todo：可选的LOGO -->
-    <a-page-header style="border: 1px solid rgb(235, 237, 240);height: 100%;"
-                   :title="title"
-                   :sub-title="subTitle"
-                   @back="onBack">
-      <template #extra>
-        <slot />
-      </template>
-    </a-page-header>
-    <!-- todo：可选的筛选框 -->
+    <div>{{ currentTime }}</div>
+    <DisconnectOutlined v-show="!connectStatus"
+                        class="right-ble" />
+    <LinkOutlined v-show="connectStatus"
+                  class="right-ble" />
+    <SettingOutlined class="right"
+                     @click="connectJoyo" />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, useAttrs, markRaw } from 'vue'
+import { defineComponent, useAttrs, markRaw, computed, reactive, toRefs } from 'vue'
+
+import { SettingOutlined, DisconnectOutlined, LinkOutlined } from '@ant-design/icons-vue'
+
+import { useStore } from 'vuex'
+
+declare global {
+  interface Window {
+    getTimer: any,
+  }
+}
 
 export default defineComponent({
   name: 'HeaderNav',
-  props: {
-    title: {
-      type: String,
-      default: '',
-    },
-    subTitle: {
-      type: String,
-      default: '',
-    },
+  components: {
+    SettingOutlined,
+    DisconnectOutlined,
+    LinkOutlined,
   },
-  // emits: ['back'],
-  emits: ['update:visible'],
   setup () {
-    const attrs = useAttrs()
-    let onBack = null
-    if (attrs.onBack) {
-      onBack = attrs.onBack
+    const store = useStore()
+
+    const connectStatus = computed(() => { // 看下行否
+      return store.getters['ble/connectStatus']
+    })
+
+    const state = reactive({
+      currentTime: '',
+    })
+
+    function getFormatTime () {
+      const now = new Date()
+      let hours: string | number = now.getHours()
+      let minutes: string | number = now.getMinutes()
+
+      // 如果小时或分钟小于10，则在前面补0
+      hours = hours < 10 ? `0${hours}` : hours
+      minutes = minutes < 10 ? `0${minutes}` : minutes
+
+      // 拼接成“hh:mm”格式的时间
+      state.currentTime = `${hours}:${minutes}`
     }
 
+    // 循环获取时间
+    window.getTimer = null
+    getFormatTime()
+    window.getTimer = setInterval(() => {
+      console.log('getTimer')
+      getFormatTime()
+    }, 60000)
+
+    function connectJoyo () {
+      if (!connectStatus.value) {
+        store.dispatch('ble/bleConnect')
+      } else {
+        store.dispatch('ble/bleDisconnect')
+      }
+    }
     return {
-      onBack,
+      ...toRefs(state),
+      connectStatus,
+      connectJoyo,
     }
   },
 })
 </script>
 
 <style scoped lang="scss">
+@import "~@/style/var.scss";
 .header-nav::v-deep {
   width: 100%;
-  // background: #fff;
-  background-color: #002253;
-  .ant-page-header {
-    background-color: #002253;
-    border: none!important;
-    color: #fff;
+  // background-color: #002253;
+  padding-left: 20px;
+  position: relative;
+  height: $headerHeight;
+  line-height:$headerHeight;
+  font-size: 36px;
+  .right {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
   }
-  .ant-page-header-heading-title {
-    color: #fff;
-  }
-  .ant-page-header-heading-sub-title {
-    color: rgba(255, 255, 255, .8);
-    margin-left: 70px;
-    font-weight: bold;
+  .right-ble {
+    position: absolute;
+    right: 80px;
+    top: 50%;
+    transform: translateY(-50%);
   }
 }
 </style>

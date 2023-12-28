@@ -25,6 +25,10 @@ interface ProjectListItem {
 
 export default createStore({
   state: {
+    allData: {}, // 所有硬件数据
+    allDataInfo2: {}, // 所有硬件数据2
+    showResult: false,
+    showBackIcon: false,
     projectList: [] as ProjectListItem[], // 程序列表
     // currentProject: {} as ProjectListItem, // 当前打开的程序
   },
@@ -36,6 +40,20 @@ export default createStore({
     },
   },
   mutations: {
+    setShowResult (state, bool) {
+      state.showResult = bool
+    },
+    showBackIcon (state, bool) {
+      state.showBackIcon = bool
+    },
+    setAllData (state, obj) { // 设置更新所有数据
+      state.allData = obj
+      console.log(state.allData)
+    },
+    setAllDataInfo2 (state, obj) { // 设置更新所有数据
+      state.allDataInfo2 = obj
+      console.log(state.allDataInfo2)
+    },
   },
   actions: {
     async createPresetGame ({ commit, state, dispatch }) { // 创建预设程序

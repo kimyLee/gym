@@ -1,8 +1,29 @@
 
+@font-face {
+  font-family: 'myFont';
+  src: url('./font.ttf');
+}
+
+.bg-holder {
+  position: absolute;
+  left: -100px;
+  top: -150px;
+  // border: 1px solid #fff;
+  width: 120%;
+  height: 150vh;
+  opacity: .6;
+
+  background-image: url(/bg-test.png);
+  background-repeat: repeat;
+  animation: scrollBackground 25s linear infinite;
+  transform: rotate(-15deg);
+}
+
 .page {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  font-family: myFont;
   .logo {
       position: absolute;
       left: 20px;
@@ -16,4 +37,26 @@
 
 .container {
   flex: 1;
+}
+
+.page-content {
+  display: flex;
+  width: 100%;
+  .half {
+    width: 50%;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+}
+
+@keyframes scrollBackground {
+  from {
+    background-position: 0 0;
+    /* 初始位置 */
+  }
+
+  to {
+    background-position: 1312px 0;
+    /* 最终位置，水平方向滚动至最右侧 */
+  }
 }

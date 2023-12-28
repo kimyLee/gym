@@ -96,7 +96,7 @@ export function generateReqParams (commandType: number, commandOrder: number, pa
   return reqParams
 }
 
-export function generateRspResult (arr: number[]) {
+export function generateRspResult (arr: number[]) { // 处理消息返回
   const cmd = getCmdFromParams(arr)
   const paramsModel = CommandCallbackRule[cmd]
   if (!paramsModel) {

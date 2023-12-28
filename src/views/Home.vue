@@ -5,7 +5,7 @@
     <div class="page">
       <div class="img-holder"
            :class="{'normal': showBtn }">
-        <img src="/dist/bg.gif" />
+        <img src="/gym/dist/bg.gif" />
       </div>
       <!-- <div class="home-title">
       健身，遇见更好的自己
@@ -143,7 +143,7 @@ export default defineComponent({
     left: 0;
     // opacity: .2;
     transform: translateY(-50%);
-    background-image: url(/dist/home.jpg);
+    background-image: url(/gym/dist/home.jpg);
     background-size: 100% auto;
     background-position: center center;
     background-repeat: no-repeat;

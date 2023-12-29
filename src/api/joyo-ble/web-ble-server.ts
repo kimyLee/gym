@@ -174,16 +174,31 @@ function parse_drive_data (buffer: any) {
 }
 
 // buffer is uint8array
-function parse_feedback_info (info: any, buffer: any) {
+function parse_feedback_info (info: any, buffer: any) { // 一秒10次（100ms）
   const dv = new DataView(buffer.buffer)
   info.iq_return = dv.getInt16(0, false)
-  console.log('力值', info.iq_return)
-  info.speed = dv.getInt16(2, false)
+  console.log('力值', info.iq_return) // 显示两个： P = iq_return / 2 * 0.1 * speed (N m/s)
+  info.speed = dv.getInt16(2, false) //
   console.log('速度', info.speed)
-  info.distance = dv.getInt16(4, false)
+  info.distance = dv.getInt16(4, false) //
   console.log('距离', info.distance)
   info.pull_num = buffer[6]
-  console.log('pull num', info.pull_num)
+  console.log('pull num', info.pull_num) // 运动次数：显示两个
+  // 卡路cal = sum( P * 0.1 ) * 4.18
+
+  // 标准：两个slide，来回力
+  // 1. 一秒10次（100ms）
+  // 1. 显示两个次数和功率： P = iq_return / 2 * 0.1 * speed (N m/s)
+  // 1. 运动次数：显示两个
+  // 1. 卡路cal = sum( P * 0.1 ) * 4.18
+  // 1. 标准下：拉力和回力
+  // 1. 去掉离心选项
+  // 1. KG的显示除以2
+  // 1. KG的显示除以2
+  // 力量测试，切换等速
+  // 力度 = iq_return / 2   （10-100）
+  // 智能健身：小球数值： distance 【 0-50 cm】，速度可调，阻力：拉力回力一致，背景图
+  //
 }
 
 function u82i8 (num: number) {

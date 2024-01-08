@@ -1,10 +1,10 @@
 <template>
   <div class="result-data-item">
     <div class="title-item">
-      运动时长
+      {{ title }}
     </div>
     <div class="number-item">
-      110
+      {{ data }}
     </div>
   </div>
 </template>
@@ -17,6 +17,16 @@ import { SettingOutlined } from '@ant-design/icons-vue'
 export default defineComponent({
   name: 'ResultDataItem',
   components: {
+  },
+  props: {
+    title: {
+      type: String,
+      default: '',
+    },
+    data: {
+      type: String,
+      default: '',
+    },
   },
   setup () {
     return {
@@ -32,7 +42,10 @@ export default defineComponent({
   width: 33%;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
+  text-align: center;
   font-size: 24px;
+  margin-top: 30px;
   .title-item {
     width: 100%;
   }

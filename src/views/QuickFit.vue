@@ -1,60 +1,195 @@
 
 <template>
-  <div class="check-page page">
-    <HeaderNav title="码点测试工具"
-               sub-title="获取码点值"
-               @back="navigatorBack">
-      <a-button type="primary"
-                @click="connect">
-        {{ connectStatus ? '已连接' : '连接' }}
-      </a-button>
-    </HeaderNav>
-    <div class="block-box container">
-      <!-- <div id="blocklyDiv" /> -->
-      <div class="blockly-info">
-        <p>识别到码点</p>
-        <!-- 基础信息 -->
-        <div class="info-card">
-          <div class="info-box">
-            <div v-show="connectStatus">
-              <span class="connected" />已连接
-            </div>
-            <div v-show="!connectStatus">
-              <span class="connected offline" />未连接
-            </div>
-            <div style="font-size: 70px;">
-              {{ lastOID }}
-            </div>
-            <div style="font-size: 70px;">
-              {{ cardNum }}
-            </div>
-            <!-- <a-form-item label="连接状态">
-              <div v-show="connectStatus">
-                <span class="connected" />已连接
+  <div class="page quick-fit-box">
+    <div class="header-nav">
+      <div>
+        <HomeOutlined
+          class="left-bottom"
+          @click="goHome" />
+        <span class="current-time">{{ currentTime }}</span>
+      </div>
+
+      <SettingOutlined class="right"
+                       @click="connect" />
+    </div>
+    <div class="quick-fit">
+      <div v-if="showResult"
+           class="result-box">
+        <RollbackOutlined
+          class="right-bottom"
+          @click="goBack" />
+        <ResultTitle title="运动总结"
+                     sub-title="快速健身" />
+        <!-- 具体报告 -->
+        <div class="flex-box">
+          <ResultDataItem title="总做功"
+                          :data="totalWork" />
+          <ResultDataItem title="运动总时长"
+                          :data="totalTime" />
+        </div>
+        <div class="flex-box">
+          <ResultDataItem title="运动次数"
+                          :data="totalPlayTime" />
+          <ResultDataItem title="平均功率"
+                          :data="totalAverW" />
+          <ResultDataItem title="热量消耗"
+                          :data="totalFinalCal" />
+        </div>
+      </div>
+
+      <div v-if="!showResult"
+           class="page-content">
+        <div class="half-box">
+          <div class="half half-left">
+            <div class="mode-box">
+              <div class="quick-btn"
+                   :class="{'active': selectMode === 'STD'}"
+                   @click="handleSelectMode('STD')">
+                标准
               </div>
-              <div v-show="!connectStatus">
-                <span class="connected offline" />未连接
+              <div class="quick-btn"
+                   :class="{ 'active': selectMode === 'FLU' }"
+                   @click="handleSelectMode('FLU')">
+                等速
               </div>
-            </a-form-item> -->
-            <!-- <a-form-item label="识别码值">
-              {{ lastOID }}
-            </a-form-item> -->
+              <div class="quick-btn"
+                   :class="{ 'active': selectMode === 'SPR' }"
+                   @click="handleSelectMode('SPR')">
+                弹力
+              </div>
+            </div>
+            <div class="slider-box">
+              <div id="content" />
+
+              <div class="show-text">
+                阻力设定
+              </div>
+              <div class="show-num">
+                {{ forceShowVal }}<span class="small">kg</span>
+              </div>
+              <div class="slider-btn">
+                <span class="reduce"
+                      @click="changeForce(-0.5)">-</span>
+                <span class="plus"
+                      @click="changeForce(0.5)">+</span>
+              </div>
+
+              <!-- <div v-show="selectMode === 'SPR'"
+                   class="fit-slider">
+                <a-slider v-model:value="spring_rate"
+                          :min="0"
+                          :max="100"
+                          class="slider"
+                          vertical />
+                <div class="slider-data">
+                  <div>弹力 {{ spring_rateShowVal }}</div>
+                  <span class="plus"
+                        @click="changeSpring_rate(1)">+</span>
+                  <span class="reduce"
+                        @click="changeSpring_rate(-1)">-</span>
+                </div>
+              </div>
+              <div v-show="selectMode === 'FLU'"
+                   class="fit-slider">
+                <a-slider v-model:value="fluid_resis_param"
+                          :min="0"
+                          :max="100"
+                          class="slider"
+                          vertical />
+                <div class="slider-data">
+                  <div>流阻 {{ fluid_resis_paramShowVal }}</div>
+                  <span class="plus"
+                        @click="changeFluid_resis_param(1)">+</span>
+                  <span class="reduce"
+                        @click="changeFluid_resis_param(-1)">-</span>
+                </div>
+              </div> -->
+            </div>
+          </div>
+          <!-- 右侧form表单 -->
+          <div class="half half-right">
+            <!-- echart 背景图 -->
+            <div>
+              <div class="data-item">
+                <div class="title-item">
+                  运动次数
+                </div>
+                <div class="number-item">
+                  <span>{{ playCount }} | {{ playCount2 }}</span>
+                </div>
+              </div>
+              <div class="data-item">
+                <div class="title-item">
+                  平均功率
+                </div>
+                <div class="number-item">
+                  {{ totalW }} w ｜ {{ totalW2 }} w
+                </div>
+              </div>
+              <div class="data-item">
+                <div class="title-item">
+                  运动时长
+                </div>
+                <div class="number-item">
+                  <span class="big-text">{{ formatPlayTime }}</span>
+                </div>
+              </div>
+              <div class="data-item">
+                <div class="title-item">
+                  能量消耗
+                </div>
+                <div class="number-item">
+                  <span class="big-text">{{ totalCal }}</span> cal
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <!-- 动态信息, 倒序展示 -->
-        <div class="info-card console">
-          <a-timeline>
-            <a-timeline-item v-for="item in debugInfo"
-                             :key="item.msg"
-                             :color="item.color">
-              {{ item.msg }}
-            </a-timeline-item>
-            <!-- <a-timeline-item>[system]: Program start!</a-timeline-item>
-            <a-timeline-item>[system]: Program stop!</a-timeline-item>
-            <a-timeline-item color="red">
-              [system]: Error happen!
-            </a-timeline-item> -->
-          </a-timeline>
+        <!-- 开始按钮 -->
+        <div class="start-btn-box">
+          <div v-show="!isPlaying"
+               class="start my-btn"
+               @click="readyStart">
+            开始
+          </div>
+          <div v-show="isPlaying"
+               class="pause my-btn"
+               @click="pause">
+            暂停
+          </div>
+          <div v-show="isPlaying"
+               class="finish  my-btn"
+               @click="finishGame">
+            结束
+          </div>
+        </div>
+
+      <!-- End 右侧form表单 -->
+      </div>
+      <!-- 加载动画特效 -->
+      <div v-show="showOverlay"
+           class="over-layer">
+        <Transition name="scale">
+          <div v-show="readyStartTime === 3"
+               class="over-num">
+            <div>3</div>
+          </div>
+        </Transition>
+        <Transition name="scale">
+          <div v-show="readyStartTime === 2"
+               class="over-num">
+            <div>2</div>
+          </div>
+        </Transition>
+        <Transition name="scale">
+          <div v-show="readyStartTime === 1"
+               class="over-num">
+            <div>1</div>
+          </div>
+        </Transition>
+        <div v-show="readyStartTime === 0"
+             class="progress-bar">
+          开始训练
         </div>
       </div>
     </div>
@@ -62,751 +197,873 @@
 </template>
 
 <script lang="ts">
-import { bleSetSingleLight } from '@/api/joyo-ble/index'
+import { formatTime2 } from '@/utils'
+
+import {
+  HistoryOutlined, FireOutlined, SyncOutlined, BulbOutlined,
+  PlayCircleOutlined, PauseCircleOutlined, SettingOutlined,
+  RollbackOutlined,
+  HomeOutlined,
+} from '@ant-design/icons-vue'
 
 import {
   ClientResponse,
   ClientResponseWithData,
   BleList,
 } from '@/api/common-type'
+
 import router from '@/router'
 import {
-  defineComponent,
-  getCurrentInstance,
-  reactive,
-  onMounted,
   toRefs,
-  onUnmounted,
-  nextTick,
-  markRaw,
-  watch,
+  reactive,
+  defineComponent,
   computed,
-  useAttrs,
+  watch,
+  onMounted,
+  onUnmounted,
 } from 'vue'
-// import Blockly from 'blockly' // todo: 拆解
-// import '@/lib/blocks/index'
-import { connectJoyo, bleState } from '@/api/joyo-ble/web-ble-server'
+import { connectJoyo, bleState, send_fit_build_frame, continutePlay, pausePlay } from '@/api/joyo-ble/web-ble-server'
+
+import HeaderNav from '@/components/HeaderNav.vue'
+import ResultTitle from '@/components/ResultTitle.vue'
+import ResultDataItem from '@/components/ResultDataItem.vue'
+import Page from '@/components/Page.vue'
 
 import { useRoute, useRouter } from 'vue-router'
-import HeaderNav from '@/components/HeaderNav.vue'
 
-import '@/style/blockly-category.scss'
+import { useStore } from 'vuex'
 
-declare global {
-    interface Window {
-      oidChange: any;
-      When_JOYO_Read: any;
-      // lastOID: any;
-      workspace: any;
-      blePlayMusic: any;
-      bleSetLight: any;
-      sleepFn: any;
-      setUp: any;
-      Interpreter: any;
-    }
-}
+import { DragAcr } from '@/lib/circle'
 
 export default defineComponent({
-  name: 'BleUsage',
+  name: 'ProFit',
   components: {
-    HeaderNav,
+    // Page,
+    // HistoryOutlined,
+    // FireOutlined,
+    // SyncOutlined,
+    // BulbOutlined,
+    // PlayCircleOutlined,
+    // PauseCircleOutlined,
+    RollbackOutlined,
+    SettingOutlined,
+    HomeOutlined,
+    ResultTitle,
+    ResultDataItem,
   },
 
   setup () {
+    const store = useStore()
     // @ts-ignore
-    const { proxy } = getCurrentInstance()
     const state = reactive({
-      connectStatus: false,
-      lastOID: 0, // -100532225
-      cardMap: [
-        'NR-R-061',
-        'NR-R-062',
-        'NR-R-063',
-        'NR-R-064',
-        'NR-R-065',
-        'NR-R-066',
-        'NR-R-067',
-        'NR-R-068',
-        'NR-R-069',
-        'NR-R-070',
-        'NR-R-071',
-        'NR-R-072',
-        'NR-R-073',
-        'NR-R-074',
-        'NR-R-075',
-        'NR-R-076',
-        'NR-R-077',
-        'NR-R-078',
-        'NR-R-079',
-        'NR-R-080',
-        'NR-R-081',
-        'NR-R-082',
-        'NR-R-083',
-        'NR-R-084',
-        'NR-R-085',
-        'NR-R-086',
-        'NR-R-087',
-        'NR-R-088',
-        'NR-R-089',
-        'NR-R-090',
-        'NR-R-091',
-        'NR-R-092',
-        'NR-R-093',
-        'NR-R-094',
-        'NR-R-095',
-        'NR-R-096',
-        'NR-R-097',
-        'NR-R-098',
-        'NR-R-099',
-        'NR-R-100',
-        'NR-R-101',
-        'NR-R-102',
-        'NR-R-103',
-        'NR-R-104',
-        'NR-R-105',
-        'NR-R-106',
-        'NR-R-107',
-        'NR-R-108',
-        'NR-R-109',
-        'NR-R-110',
-        'NR-SR-001',
-        'NR-SR-002',
-        'NR-SR-003',
-        'NR-SR-004',
-        'NR-SR-006',
-        'NR-SR-059',
-        'NR-SR-060',
-        'NR-SR-061',
-        'NR-SR-062',
-        'NR-SR-063',
-        'NR-SR-073',
-        'NR-SR-074',
-        'NR-SR-075',
-        'NR-SR-076',
-        'NR-SR-077',
-        'NR-SR-078',
-        'NR-SR-084',
-        'NR-SR-085',
-        'NR-SR-086',
-        'NR-SR-087',
-        'NR-SR-088',
-        'NR-SR-094',
-        'NR-SR-095',
-        'NR-SR-096',
-        'NR-SR-097',
-        'NR-SR-098',
-        'NR-SR-099',
-        'NR-SR-100',
-        'NR-SR-101',
-        'NR-SR-102',
-        'NR-SR-103',
-        'NR-SR-104',
-        'NR-SR-105',
-        'NR-SR-106',
-        'NR-SR-107',
-        'NR-SR-108',
-        'NR-SSR-085',
-        'NR-SSR-086',
-        'NR-SSR-087',
-        'NR-SSR-088',
-        'NR-SSR-089',
-        'NR-SSR-090',
-        'NR-SSR-091',
-        'NR-SSR-092',
-        'NR-SSR-093',
-        'NR-SSR-094',
-        'NR-SSR-095',
-        'NR-SSR-096',
-        'NR-SSR-097',
-        'NR-SSR-098',
-        'NR-SSR-099',
-        'NR-SSR-100',
-        'NR-SSR-101',
-        'NR-SSR-102',
-        'NR-SSR-103',
-        'NR-SSR-104',
-        'NR-SSR-105',
-        'NR-SSR-106',
-        'NR-SSR-107',
-        'NR-SSR-108',
-        'NR-SSR-109',
-        'NR-SSR-110',
-        'NR-SSR-111',
-        'NR-SSR-112',
-        'NR-SSR-113',
-        'NR-SSR-114',
-        'NR-SSR-115',
-        'NR-SSR-116',
-        'NR-SSR-117',
-        'NR-SSR-118',
-        'NR-SSR-119',
-        'NR-SSR-120',
-        'NR-UR-085',
-        'NR-UR-086',
-        'NR-UR-087',
-        'NR-UR-088',
-        'NR-UR-089',
-        'NR-UR-090',
-        'NR-UR-091',
-        'NR-UR-092',
-        'NR-UR-093',
-        'NR-UR-094',
-        'NR-UR-095',
-        'NR-UR-096',
-        'NR-UR-097',
-        'NR-UR-098',
-        'NR-UR-099',
-        'NR-UR-100',
-        'NR-UR-101',
-        'NR-UR-102',
-        'NR-UR-103',
-        'NR-UR-104',
-        'NR-AR-049',
-        'NR-AR-050',
-        'NR-AR-051',
-        'NR-AR-052',
-        'NR-AR-053',
-        'NR-AR-054',
-        'NR-AR-055',
-        'NR-AR-056',
-        'NR-AR-057',
-        'NR-AR-058',
-        'NR-AR-059',
-        'NR-AR-060',
-        'NR-SP-061',
-        'NR-SP-063',
-        'NR-SP-064',
-        'NR-SP-065',
-        'NR-MR-055',
-        'NR-MR-056',
-        'NR-MR-057',
-        'NR-MR-058',
-        'NR-OR-087',
-        'NR-OR-088',
-        'NR-OR-089',
-        'NR-OR-090',
-        'NR-OR-091',
-        'NR-OR-092',
-        'NR-OR-093',
-        'NR-OR-094',
-        'NR-OR-095',
-        'NR-OR-096',
-        'NR-OR-097',
-        'NR-OR-098',
-        'NR-BP-023',
-        'NR-BP-024',
-        'NR-BP-025',
-        'NR-BP-026',
-        'NR-BP-027',
-        'NR-SLR-04',
-        'NR-SLR-05',
-        'NR-SLR-05',
-        'NR-SLR-05',
-        'NR-SLR-05',
-        'NR-SLR-05',
-        'NR-SLR-05',
-        'NR-SLR-05',
-        'NR-SLR-05',
-        'NR-SLR-05',
-        'NR-SLR-05',
-        'NR-SLR-06',
-        'NR-SE-007',
-        'NR-SE-008',
-        'NR-SE-009',
-        'NR-SE-010',
-        'NR-SE-011',
-        'NR-SE-012',
-        'NR-HR-161',
-        'NR-HR-162',
-        'NR-HR-163',
-        'NR-HR-164',
-        'NR-HR-165',
-        'NR-HR-166',
-        'NR-HR-167',
-        'NR-HR-168',
-        'NR-HR-169',
-        'NR-HR-170',
-        'NR-HR-171',
-        'NR-HR-172',
-        'NR-HR-173',
-        'NR-HR-174',
-        'NR-HR-175',
-        'NR-HR-176',
-        'NR-HR-177',
-        'NR-HR-178',
-        'NR-HR-179',
-        'NR-HR-180',
-        'NR-HR-181',
-        'NR-HR-182',
-        'NR-HR-183',
-        'NR-HR-184',
-        'NR-HR-185',
-        'NR-HR-186',
-        'NR-HR-187',
-        'NR-HR-188',
-        'NR-HR-189',
-        'NR-HR-190',
-        'NR-HR-191',
-        'NR-HR-192',
-        'NR-HR-193',
-        'NR-HR-194',
-        'NR-HR-195',
-        'NR-HR-196',
-        'NR-HR-197',
-        'NR-HR-198',
-        'NR-HR-199',
-        'NR-HR-200',
-        'NR-SP-062',
-      ],
-      newYearCardMap: [
-        'NRSS-UR-006',
-        'NRSS-UR-007',
-        'NRSS-UR-008',
-        'NRSS-UR-009',
-        'NRSS-AR-001',
-        'NRSS-AR-002',
-        'NRSS-AR-003',
-        'NRSS-AR-004',
-        'NRSS-SP-004',
-        'NRSS-SP-005',
-        'NRSS-SP-006',
-        'NRSS-SP-007',
-        'NR-20TH-001',
-        'NRSS-SV-G05',
-        'NRSS-SV-G06',
-        'NRSS-SV-G07',
-        'NRSS-SV-G08',
-        'NRSS-SV-G09',
-        'NRSS-SV-G10',
-        'NRSS-SV-S05',
-        'NRSS-SV-S06',
-        'NRSS-SV-S07',
-        'NRSS-SV-S08',
-        'NRSS-SV-S09',
-        'NRSS-SV-S10',
-        'NRSS-SE-001',
-        'NRSS-SE-002', // 100532552
-        'NRSS-HR-011', // 100532553 - 100532525 = 27
-        'NRSS-HR-012',
-        'NRSS-HR-013',
-        'NRSS-HR-014',
-        'NRSS-HR-015',
-        'NRSS-HR-016',
-        'NRSS-HR-017',
-        'NRSS-HR-018',
-        'NRSS-HR-019',
-        'NRSS-HR-020',
+      // connectStatus: false,
+      // value1: 1,
+      force: 0,
 
-        // 魔道祖师的卡
+      fluid_resis_param: 0,
+      spring_rate: 0,
+      back_force: 0,
 
-      ],
-      MDCard: [
-        'MD-CJ-026',
-        'MD-CJ-027',
-        'MD-CJ-028',
-        'MD-CJ-029',
-        'MD-CJ-030',
-        'MD-CJ-031',
-        'MD-CJ-032',
-        'MD-CJ-033',
-        'MD-CJ-034',
-        'MD-CJ-035',
-        'MD-CJ-036',
-        'MD-CJ-037',
-        'MD-CJ-038',
-        'MD-CJ-039',
-        'MD-CJ-040',
-        'MD-CJ-041',
-        'MD-CJ-042',
-        'MD-CJ-043',
-        'MD-CJ-044',
-        'MD-CJ-045',
-        'MD-CJ-046',
-        'MD-CJ-047',
-        'MD-CJ-048',
-        'MD-CJ-049',
-        'MD-CJ-050',
-        'MD-JQ-001',
-        'MD-JQ-002',
-        'MD-JQ-003',
-        'MD-JQ-004',
-        'MD-JQ-005',
-        'MD-JQ-006',
-        'MD-JQ-007',
-        'MD-JQ-008',
-        'MD-JQ-009',
-        'MD-JQ-010',
-        'MD-JQ-011',
-        'MD-JQ-012',
-        'MD-JQ-013',
-        'MD-JQ-014',
-        'MD-JQ-015',
-        'MD-JQ-016',
-        'MD-JQ-017',
-        'MD-JQ-018',
-        'MD-JQ-019',
-        'MD-JQ-020',
-        'MD-JQ-021',
-        'MD-JQ-022',
-        'MD-JQ-023',
-        'MD-JQ-024',
-        'MD-JQ-025',
-        'MD-JQ-026',
-        'MD-JQ-027',
-        'MD-JQ-028',
-        'MD-JQ-029',
-        'MD-JQ-030',
-        'MD-JQ-031',
-        'MD-JQ-032',
-        'MD-JQ-033',
-        'MD-JQ-034',
-        'MD-JQ-035',
-        'MD-JQ-036',
-        'MD-JQ-037',
-        'MD-JQ-038',
-        'MD-JQ-039',
-        'MD-JQ-040',
-        'MD-YX-014',
-        'MD-YX-015',
-        'MD-YX-016',
-        'MD-YX-017',
-        'MD-YX-018',
-        'MD-YX-019',
-        'MD-YX-020',
-        'MD-YX-021',
-        'MD-YX-022',
-        'MD-YX-023',
-        'MD-YX-024',
-        'MD-YX-025',
-        'MD-YX-026',
-        'MD-Q-001',
-        'MD-Q-002',
-        'MD-Q-003',
-        'MD-Q-004',
-        'MD-Q-005',
-        'MD-Q-006',
-        'MD-Q-007',
-        'MD-Q-008',
-        'MD-Q-009',
-        'MD-Q-010',
-        'MD-Q-011',
-        'MD-Q-012',
-        'MD-Q-013',
-        'MD-Q-014',
-        'MD-Q-015',
-        'MD-Q-016',
-        'MD-Q-017',
-        'MD-Q-018',
-        'MD-Q-019',
-        'MD-Q-020',
-        'MD-Q-021',
-        'MD-Q-022',
-        'MD-Q-023',
-        'MD-Q-024',
-        'MD-FM-014',
-        'MD-FM-015',
-        'MD-FM-016',
-        'MD-FM-017',
-        'MD-FM-018',
-        'MD-FM-019',
-        'MD-FM-020',
-        'MD-FM-021',
-        'MD-FM-022',
-        'MD-FM-023',
-        'MD-FM-024',
-        'MD-FM-025',
-        'MD-CH-013',
-        'MD-CH-014',
-        'MD-CH-015',
-        'MD-CH-016',
-        'MD-CH-017',
-        'MD-CH-018',
-        'MD-CH-019',
-        'MD-CH-020',
-        'MD-CH-021',
-        'MD-CH-022',
-        'MD-CH-023',
-        'MD-CH-024',
-        'MD-PT-005',
-        'MD-PT-006',
-        'MD-PT-007',
-        'MD-PT-008',
-        'MD-PT-009',
-        'MD-PT-010',
-        'MD-PT-011',
-        'MD-PT-012',
-        'MD-CP-005',
-        'MD-CP-006',
-        'MD-CP-007',
-        'MD-CP-008',
-        'MD-MC-001',
-        'MD-MC-002',
-        'MD-MC-003',
-        'MD-MC-004',
-        'MD-MC-005',
-        'MD-QM-005',
-        'MD-QM-006',
-        'MD-QM-007',
-        'MD-QM-008',
-        'MD-PR-005',
-        'MD-PR-006',
-        'MD-PR-007',
-        'MD-PR-008',
-        'MD-PR-009',
-        'MD-PR-010',
-        'MD-PR-011',
-        'MD-PR-012',
-      ],
+      selectMode: 'STD',
+      // showResult: false,
+      hasFirstInit: false, // 是否已经获取初始值力度
+      isPlaying: false,
+      playTime: 0,
+      totalCal: 0, // 卡路里
+      totalCalJiaoEr: 0, // 卡路里
+      playCount: 0, // 运动次数
+      playCount2: 0, // 运动次数
+      totalW: 0, // 总功率
+      totalW2: 0, // 总功率
+      readyStartTime: -1,
+      showOverlay: false,
+
+      // 汇总数据
+      totalWork: '0J',
+      totalTime: '00:00:00',
+      totalPlayTime: '0 | 0',
+      totalAverW: '0w',
+      totalFinalCal: '0cal',
+
+      currentTime: '',
+
+      target: null as any,
     })
 
-    let timer = null as any
+    function getFormatTime () {
+      const now = new Date()
+      let hours: string | number = now.getHours()
+      let minutes: string | number = now.getMinutes()
 
-    const route = useRoute()
-    const attrs = useAttrs()
+      const APM = (hours >= 12 ? ' PM' : ' AM')
+      // 如果小时或分钟小于10，则在前面补0
+      hours = hours < 10 ? `0${hours}` : hours
+      minutes = minutes < 10 ? `0${minutes}` : minutes
 
-    const cardNum = computed(() => {
-      if (state.lastOID >= 100532225 && state.lastOID <= 100532462) {
-        return state.cardMap[state.lastOID - 100532225]
-      } else if (state.lastOID >= 100532525 && state.lastOID <= 100532562) {
-        return state.newYearCardMap[state.lastOID - 100532525]
-      } else if (state.lastOID >= 100532825 && state.lastOID <= 100532979) {
-        return state.MDCard[state.lastOID - 100532825]
-      } else {
-        return 'xx-xx-xx'
+      // 拼接成“hh:mm”格式的时间
+      state.currentTime = `${hours}:${minutes}` + APM
+    }
+
+    // 循环获取时间
+    window.getTimer = null
+    getFormatTime()
+    window.getTimer = setInterval(() => {
+      console.log('getTimer')
+      getFormatTime()
+    }, 60000)
+
+    const goHome = () => {
+      router.push({ name: 'Menu' })
+    }
+
+    const forceShowVal = computed(() => { // 看下行否
+      return state.force.toFixed(1)
+    })
+    const showResult = computed(() => { // 看下行否
+      return store.state.showResult
+    })
+
+    watch(() => showResult.value, (val, old) => {
+      if (old && !val) {
+        console.log('重置数据')
+        initAllData()
       }
     })
-
-    watch(() => bleState.connectStatus, (val) => {
-      state.connectStatus = val
-      // if (!val) {
-      //   debugLog('断开连接！', 'system')
-      // } else {
-      //   debugLog('Joyo已连接', 'system')
-      // }
+    const back_forceShowVal = computed(() => { // 看下行否
+      return state.back_force.toFixed(1)
+    })
+    const spring_rateShowVal = computed(() => { // 看下行否
+      return state.spring_rate.toFixed(1)
+    })
+    const fluid_resis_paramShowVal = computed(() => { // 看下行否
+      return state.fluid_resis_param.toFixed(1)
+    })
+    const formatPlayTime = computed(() => { // 看下行否
+      return formatTime2(Math.floor(state.playTime))
     })
 
-    const navigatorBack = () => {
-      router.push({ name: 'Home' })
+    const goPage = (name: string) => {
+      router.push({ name })
     }
 
     const connect = () => {
-      heartBeat()
       connectJoyo()
     }
 
-    function heartBeat () {
-      clearInterval(timer)
-      timer = setInterval(() => { // 定时防止休眠
-        console.log('beat')
-        bleSetSingleLight(11, 0x000000)
-      }, 20000)
+    function changeForce (step: number) {
+      state.force = Math.min(50, Math.max(0, state.force + step))
+
+      if (state.target) {
+        state.target.value = state.force * 2
+        state.target.draw(state.target.value)
+      }
+    }
+    // 修改回力
+    function changeBackForce (step: number) {
+      state.back_force = state.back_force + step
     }
 
-    const handleOIDVal = (num: number) => { // 预先处理下OID码, 将8010 ···值映射到 1···
-      // if (num >= 301 && num <= 314) {
-      //   return num - 300
+    // 修改弹力流阻
+    function changeSpring_rate (step: number) {
+      state.spring_rate = state.spring_rate + step
+    }
+    function changeFluid_resis_param (step: number) {
+      state.fluid_resis_param = state.fluid_resis_param + step
+    }
+
+    function readyStart () {
+      state.showOverlay = true
+      setTimeout(() => {
+        state.readyStartTime = 3
+        setTimeout(() => {
+          state.readyStartTime = 2
+          setTimeout(() => {
+            state.readyStartTime = 1
+            setTimeout(() => {
+              state.readyStartTime = 0
+              setTimeout(() => {
+                state.readyStartTime = -1
+                state.showOverlay = false
+
+                startPlay()
+              }, 500)
+            }, 500)
+          }, 500)
+        }, 500)
+      }, 200)
+    }
+
+    function initAllData () {
+      state.playTime = 0
+      state.playCount = 0
+      state.playCount2 = 0
+      state.totalW = 0
+      state.totalW2 = 0
+
+      state.totalCal = 0
+      state.totalCalJiaoEr = 0
+      // resetParams()
+      // state.isPlaying = true
+    }
+
+    function handleSelectMode (mode: string) {
+      state.selectMode = mode
+      resetParams()
+    }
+
+    function resetParams () { // 切换mode时候，重置基础参数
+      state.fluid_resis_param = 0
+      state.spring_rate = 0
+      state.force = 0
+      state.back_force = 0
+    }
+
+    function startPlay () { // 发送设置力量指令
+      // 先恢复正常
+      continutePlay()
+
+      // 发送对应指令
+      console.log('发送指令')
+      console.log('fluid_resis_param', state.fluid_resis_param)
+      console.log('spring_rate', state.spring_rate)
+      console.log('force', state.force)
+      console.log('mode', state.selectMode)
+
+      state.back_force = state.force
+
+      // if (state.selectMode !== 'STD') { // 非标准下设置回力=拉力
+      //   state.back_force = state.force
       // }
-      // return Math.round(num / 10) - 800
-      return num
+      setTimeout(() => {
+        send_fit_build_frame({
+          fluid_resis_param: state.fluid_resis_param,
+          spring_rate: state.spring_rate,
+          force: state.force,
+          back_force: state.back_force,
+          mode: state.selectMode,
+        })
+        state.isPlaying = true
+      }, 500)
     }
 
-    onUnmounted(() => {
-      //
-    })
+    function pause () {
+      pausePlay()
+      state.isPlaying = false
+    }
+    function finishGame () {
+      pausePlay()
+      state.isPlaying = false
+
+      state.totalWork = state.totalCal * 4.18 + 'J'
+      state.totalTime = formatTime2(Math.floor(state.playTime))
+      state.totalPlayTime = state.playCount + ' | ' + state.playCount2
+      state.totalAverW = Math.round(state.totalCal * 4.18 / state.playTime) + 'w'
+      state.totalFinalCal = state.totalCal + 'cal'
+
+      store.commit('setShowResult', true)
+    }
+
+    function handleUpdateData (info: any, info1: any) { // 更新运动的实时状态
+      state.playTime = state.playTime + 0.1
+
+      // 运动次数
+      state.playCount = info.pull_num
+      state.playCount2 = info1.pull_num
+
+      // state.totalW = state.value1 * 0.1 * obj.info0.speed
+      // state.totalW = state.value1 * 0.1 * obj.info1.speed
+
+      state.totalW = Math.round((info.iq_return / 2 * 0.1 * info.speed))
+      state.totalW2 = Math.round((info1.iq_return / 2 * 0.1 * info1.speed))
+
+      // 卡路里, 这里取两个电机总和，sum( P * 0.1 ) * 4.18
+      const cal1 = Number((state.totalW * 0.1 * 4.18).toFixed(2))
+      const cal2 = Number((state.totalW2 * 0.1 * 4.18).toFixed(2))
+      state.totalCal = state.totalCal + cal1 + cal2
+      state.totalCalJiaoEr = state.totalCal * 4.18
+    }
+
+    let chart: any
+
+    function initChartLine () {
+      const echarts = (window as any).echarts
+      chart = echarts.init(document.getElementById('echart'))
+      // canvas.setChart(chart)
+      // chartLine = chart
+
+      var option = {
+        title: {
+          text: '',
+          left: 'center',
+        },
+        legend: {
+          data: ['t', 'v', 'p', 't1', 'v1', 'p1'],
+          // orient: 'vertical',
+          // top: 20,
+          // // left:10,
+          // // top: 'center',
+          // left: 'center',
+          // backgroundColor: '#eee',
+          // z: 400,
+        },
+        grid: {
+          // containLabel: true,
+        },
+        tooltip: {
+          show: true,
+          trigger: 'axis',
+        },
+        xAxis: {
+          type: 'category',
+          boundaryGap: false,
+          show: false,
+        },
+        yAxis: {
+          type: 'value',
+          // splitLine: {
+          //   lineStyle: {
+          //     type: 'dashed',
+          //   },
+          // },
+        },
+        series: [],
+      }
+
+      chart.setOption(option)
+    }
+
+    const windowCnt = 40 // 一个波形绘图窗口数据点数
+    const charData = {
+      torque: new Array(windowCnt),
+      torque1: new Array(windowCnt), // 电机2
+      speed: new Array(windowCnt),
+      speed1: new Array(windowCnt),
+      rope_distance: new Array(windowCnt),
+      rope_distance1: new Array(windowCnt),
+    }
+
+    function updateLine (info0: any, info1: any) {
+      if (isNaN(info0.iq_return) || isNaN(info1.iq_return)) return
+      charData.torque.shift()
+      charData.torque1.shift()
+      charData.torque[windowCnt - 1] = info0.iq_return / 2
+      charData.torque1[windowCnt - 1] = info1.iq_return / 2
+
+      charData.speed.shift()
+      charData.speed1.shift()
+      charData.speed[windowCnt - 1] = info0.speed
+      charData.speed1[windowCnt - 1] = info1.speed
+
+      charData.rope_distance.shift()
+      charData.rope_distance1.shift()
+      charData.rope_distance[windowCnt - 1] = info0.distance
+      charData.rope_distance1[windowCnt - 1] = info1.distance
+
+      var option = {
+        animation: false,
+        series: [{
+          // name: 't',
+          name: 't',
+          type: 'line',
+          data: charData.torque,
+        }, {
+          name: 'v',
+          type: 'line',
+          data: charData.speed,
+        }, {
+          name: 'p',
+          type: 'line',
+          data: charData.rope_distance,
+        }, {
+          name: 't1',
+          type: 'line',
+          data: charData.torque1,
+        }, {
+          name: 'v1',
+          type: 'line',
+          data: charData.speed1,
+        }, {
+          name: 'p1',
+          type: 'line',
+          data: charData.rope_distance1,
+        }],
+      }
+
+      // var optionGauge = {
+      //   backgroundColor: "#ffffff",
+      //   series: [{
+      //     animation: false,
+      //     data: [{
+      //       // value: parseInt( (1+Math.sin(time)) * 50 ),
+      //       value: info0.iq_return,
+      //       name: '力量',
+      //     }]
+      //   }]
+      // };
+      if (chart) {
+        chart.setOption(option)
+      }
+
+      // chartGauge.setOption(optionGauge)
+    }
+
+    function goBack () {
+      store.commit('setShowResult', false)
+    }
 
     onMounted(() => {
-      // state.lastOID = 100532225
-      // setInterval(() => {
-      //   state.lastOID = state.lastOID + 1
-      // }, 2000);
-      // 获取当前游戏内容
-      (window as any).handleNotifyEvent = (msg: number[]) => {
-        if (msg.length === 11 && msg[2] === 0x05 && msg[3] === 0xB1 && msg[4] === 0x04) {
-          const val = handleOIDVal(msg[10] * 256 * 256 * 256 + msg[9] * 256 * 256 + msg[8] * 256 + msg[7])
-          state.lastOID = val
+      const dom = document.getElementById('content')
+      // const DragAcrInstance = (window as any).DragAcr
+      const a = new DragAcr({
+        el: dom,
+        startDeg: 0.75,
+        endDeg: 2.25,
+        outColor: '#eee',
+        counterclockwise: false,
+        change: (v: any) => {
+          state.force = v / 2 // 0-50kg
+          console.log(`value:${v}`)
+        },
+      })
+      state.target = a;
+      // const info0 = {
+      //   temp_mos,
+      //   err,
+      //   mode,
+      //   iq_return,
+      //   temp,
+      //   speed,
+      //   distance,
+      //   pull_num,
+      // }
+      // const info1 = {
+      //   iq_return,
+      //   temp,
+      //   speed,
+      //   distance,
+      //   pull_num,
+      // }
+      (window as any).webBleNotify = (obj: { info0: any, info1: any }) => {
+        console.log('webBleNotify', obj.info0, obj.info1)
+
+        //  P = iq_return / 2 * 0.1 * speed (N m/s)
+
+        // updateLine(obj.info0, obj.info1)
+        if (!state.hasFirstInit) {
+          state.force = obj.info0.iq_return / 2 // 拉力
+          state.back_force = obj.info1.iq_return / 2 // 回力
+
+          state.hasFirstInit = true
+        }
+        if (state.isPlaying) { //
+          handleUpdateData(obj.info0, obj.info1)
         }
       }
+      // setTimeout(() => {
+      //   initChartLine()
+      // }, 1000)
+    })
+
+    onUnmounted(() => {
+      state.target = null;
+      (window as any).webBleNotify = null
     })
 
     return {
-      // testColorCode,
-      cardNum,
       ...toRefs(state),
+      goHome,
+      resetParams,
       connect,
-      navigatorBack,
+      goPage,
+      changeForce,
+      changeBackForce,
+      changeSpring_rate,
+      changeFluid_resis_param,
+      forceShowVal,
+      back_forceShowVal,
+      spring_rateShowVal,
+      fluid_resis_paramShowVal,
+      // plainOptions,
+      startPlay,
+      readyStart,
+      pause,
+      finishGame,
+      formatPlayTime,
+      showResult,
+      handleSelectMode,
+      goBack,
     }
   },
 })
 </script>
 
 <style lang="scss" scoped>
-.check-page::v-deep {
+@import "~@/style/var.scss";
+
+$bottomHeight: 120px;
+.quick-fit-box {
+  font-family: myFont2;
+  background-color: #3d3d3d;
+  font-weight: 300;
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 960px;
+  max-height: 600px;
+
   width: 100%;
   height: 100vh;
   overflow: hidden;
-
-  .blocklyToolboxDiv {
-    background-color: #fff;
-    border-right: 1px solid #eee;
-  }
-  .blocklyTreeRow {
-    // padding: 20px 0;
-    height: 60px;
-    line-height: 60px;
-    cursor: pointer;
-    &:hover {
-      background: #eee;
-    }
-    &.blocklyTreeSelected {
-      background-color: rgb(89, 124, 250) !important;
-    }
-  }
-}
-.header {
-  width: 100%;
-  height: 88px;
-  background-color: #232528;
   display: flex;
-  justify-content: space-between;
-  padding: 13px 17px 10px;
-  span {
-    display: inline-block;
-  }
-  .back {
-    height: 66px;
-    padding: 0 12px;
-    background: #6c6c6c;
-    color: #fff;
-    border-radius: 10px;
-    font-weight: bold;
-    font-size: 30px;
-    line-height: 65px;
-  }
-  .title {
-    font-weight: bold;
-    font-size: 30px;
-    color: #fff;
-    height: 65px;
-    line-height: 65px;
-    margin-right: 20px;
-    cursor: pointer;
-    &.active {
-      font-size: 24px !important;
-    }
-  }
-  .header-btn {
-    background-color: #497cff;
-    border-radius: 5px;
-    padding: 0 10px;
-    height: 65px;
-    display: inline-block;
-    box-sizing: border-box;
+  flex-direction: column;
+  font-size: 36px;
 
-    &.delete {
-      background-color: red;
-    }
-    &.run {
-      background-color: #02ebae;
-    }
-    &:active {
-      opacity: 0.7;
-    }
-  }
-}
-.dropdown {
-  .menu-item {
-    font-size: 20px;
-    padding: 15px 10px;
-  }
-}
-.block-box {
-  width: 100%;
-  height: 100%;
-  flex: 1;
-  display: flex;
-  .blockly-info {
-    text-align: center;
-    overflow: auto;
-    box-sizing: border-box;
-    padding: 20px;
-    height: calc(100vh - 80px);
-    font-size: 34px;
-
+  .header-nav::v-deep {
     width: 100%;
-    color: #444;
-    background: #fff;
-    padding: 20px;
-    box-sizing: border-box;
-    border-left: 1px solid #ccc;
+    padding-left: 20px;
+    position: relative;
+    height: $headerHeight;
+    line-height:$headerHeight;
+    font-size: 36px;
+    .current-time {
+      margin-left: 20px;
+      margin-top: 2px;
+      font-size: 20px;
+      font-weight: 400;
+    }
+    .right {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  }
+}
 
-    // 连接点
-    .info-card::v-deep {
+.quick-fit {
+  display: flex;
+  height: calc(100vh - 80px);
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+
+  .result-box {
+
+    // width: 100%;
+    // height: 100%;
+    .flex-box {
+      position: relative;
+      width: 100%;
+      height: 80px;
       display: flex;
       justify-content: center;
-
-      .info-box {
-        width: 500px;
-      }
-      .info-header {
-        color: #000000d9;
-        font-weight: 700;
-        font-size: 16px;
-        margin-bottom: 12px;
-      }
-      // .info-content {
-      //   color: #000000d9;
-      //   font-weight: 400;
-      //   font-size: 14px;
-      // }
-      .ant-form-item {
-        margin-bottom: 0;
-      }
-
-      &.console {
-        padding: 10px 0;
-        height: 35%;
-        overflow-y: scroll;
-        overflow-x: hidden;
-      }
     }
+  }
+  .right-bottom {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+  }
 
-    .connected {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      display: inline-block;
-      background: #02ebae;
-      margin-right: 20px;
-      &.offline {
-        background: red;
-      }
-    }
-    .var-info {
+  .slider-box {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    margin-left: 30px;
+    box-sizing: border-box;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+
+    #content {
       width: 100%;
-      overflow: auto;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      &:not(:last-child) {
-        border-bottom: 1px solid #ccc;
+      height: 100%;
+      width: 280px;
+    }
+    .show-text {
+      position: absolute;
+      left: 50%;
+      transform: translate(-50%);
+      top: 70px;
+      font-size: 20px;
+    }
+    .show-num {
+      position:absolute;
+      left: 50%;
+      transform: translate(-50%);
+      top: 100px;
+      font-size: 48px;
+      .small {
+        font-size: 20px;
       }
-      .var-label {
-        width: 100px;
-        padding: 10px;
-        box-sizing: border-box;
-        border-right: 1px solid #ccc;
-        // background-color: #6c6c6c;
+    }
+    .slider-btn {
+      position:absolute;
+      left: 50%;
+      transform: translate(-50%);
+      bottom: 50px;
+      .plus,.reduce {
+        font-size: 56px;
+        font-weight: bold;
+        cursor: pointer;
+        width: 80px;
+        height: 80px;
+        padding: 0 10px;
+        line-height: 80px;
+
+        border-radius: 2px;
+        text-align: center;
+
+        user-select: none;
+
+        &:active {
+          opacity: .8;
+        }
       }
-      .var-value {
-        padding: 10px;
-        box-sizing: border-box;
+      .plus {
+        margin-left: 35px;
       }
     }
   }
+
+  .fit-slider {
+    height: 65%;
+    display: flex;
+
+    .slider {}
+
+    .slider-data {
+      width: 150px;
+      position: relative;
+      text-align: center;
+      margin-right: 40px;
+    }
+
+    .plus,
+    .reduce {
+      cursor: pointer;
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      line-height: 50px;
+      border: 2px solid #91d5ff;
+      // border: 2px solid #fff;
+      // color: #91d5ff;
+      border-radius: 2px;
+      text-align: center;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 30%;
+      user-select: none;
+
+      &:active {
+        opacity: .8;
+      }
+    }
+
+    .reduce {
+      top: 60%;
+    }
+
+  }
+
+  .page-content {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .half-box {
+    width: 100%;
+    height: calc(100% - $bottomHeight);
+
+    display: flex;
+  }
+
+  .half {
+    display: flex;
+    flex-wrap: wrap;
+
+    &.half-left {
+      padding: 30px;
+      box-sizing: border-box;
+      display: flex;
+      width: 50%;
+      flex-wrap: nowrap;
+      // border-right: 1px solid #0d92f5;
+
+    }
+
+    &.half-right {
+      width: 50%;
+      padding: 8px 36px;
+      box-sizing: border-box;
+
+      .echart-box {
+        // position: absolute;
+        // z-index: -1;
+        width: 100%;
+        height: 180px;
+      }
+    }
+
+    .mode-box::v-deep {
+      width: 100px;
+      user-select: none;
+      .quick-btn {
+        // width: 100%;
+        padding: 0 12px;
+        text-align: center;
+        height: 50px;
+        line-height: 50px;
+        border-radius: 50px;
+        border: 1px solid #fff;
+        font-size: 32px;
+        margin-bottom: 36px;
+        user-select: none;
+        cursor: pointer;
+        &.active {
+           border: 1px solid $blue;
+          background-color: $blue;
+          color: #fff;
+        }
+
+      }
+
+    }
+
+  }
+
+  .data-item {
+    // width: 50%;
+    width: 160px;
+    height: 160px;
+    display: inline-flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 28px;
+    margin: 4px;
+
+    background-color: rgba(0, 0, 0, .6);
+
+    .title-item {
+      width: 100%;
+      font-size: 24px;
+    }
+    .big-text {
+      // display: inline-block;
+      // height: 44px;
+      // position: absolute;
+      font-size: 48px;
+    }
+
+    .number-item {
+      font-weight: bold;
+      width: 100%;
+      // text-align: center;
+    }
+  }
+
+  .start-btn-box {
+    // position: absolute;
+    width: 100%;
+    height: $bottomHeight;
+    text-align: center;
+    .my-btn {
+      font-size: 60px;
+      display: inline-block;
+      width: 240px;
+      height: 88px;
+      line-height: 88px;
+      border-radius: 36px;
+      // padding: 20px;
+      background-color: #0d92f5;
+      &:last-child {
+         margin-left: 20px;
+      }
+
+      &.finish {
+        background-color: orange;
+      }
+    }
+  }
+  .start-btn {
+
+    height: 80px;
+    line-height: 80px;
+    font-size: 70px;
+    color: rgba(255, 255, 255, .8);
+
+    &>.anticon {
+      cursor: pointer;
+      margin-right: 30px;
+    }
+  }
+
+  // 开始训练
+  .over-layer {
+    position: absolute;
+    z-index: 100;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, .6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  .over-num {
+    font-size: 80px;
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    top: 50%;
+    left: 50%;
+    margin-left: -50px;
+    margin-top: -50px;
+    text-align: center;
+  }
+
+  .progress-bar {
+    background-color: #0456a3;
+    width: 100%;
+    height: 50px;
+    line-height: 50px;
+    // padding: 10px 0;
+    text-align: center;
+    color: white;
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    background-size: 40px 40px;
+    animation: progress 1s linear infinite;
+  }
 }
-#blocklyDiv {
-  width: 100%;
-  height: 100%;
-  flex: 1;
+
+@keyframes progress {
+  0% {
+    background-position: 0 0;
+  }
+
+  100% {
+    background-position: 120px 0;
+  }
+}
+</style>
+<style lang="scss">
+.scale-enter-active {
+  transition: all 0.9s ease;
+}
+
+.scale-enter-from {
+  opacity: 0;
+  transform: scale(2);
+  transform-origin: center center;
 }
 </style>

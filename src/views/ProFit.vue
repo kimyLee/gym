@@ -4,16 +4,22 @@
     <div class="pro-fit">
       <div v-if="showResult"
            class="result-box">
-        <ResultTitle />
+        <ResultTitle title="运动总结"
+                     sub-title="专业健身" />
         <!-- 具体报告 -->
         <div class="flex-box">
-          <ResultDataItem />
-          <ResultDataItem />
+          <ResultDataItem title="总做功"
+                          :data="totalWork" />
+          <ResultDataItem title="运动总时长"
+                          :data="totalTime" />
         </div>
         <div class="flex-box">
-          <ResultDataItem />
-          <ResultDataItem />
-          <ResultDataItem />
+          <ResultDataItem title="运动次数"
+                          :data="totalPlayTime" />
+          <ResultDataItem title="平均功率"
+                          :data="totalAverW" />
+          <ResultDataItem title="热量消耗"
+                          :data="totalFinalCal" />
         </div>
       </div>
 
@@ -32,10 +38,10 @@
               <a-radio-button value="STD">
                 标准
               </a-radio-button>
-              <a-radio-button disabled
+              <!-- <a-radio-button disabled
                               :value="5">
                 离心
-              </a-radio-button>
+              </a-radio-button> -->
               <a-radio-button value="FLU">
                 等速
               </a-radio-button>
@@ -48,18 +54,36 @@
             <div class="fit-slider">
               <!-- 力度调节 -->
               <a-slider
-                v-model:value="value1"
+                v-model:value="force"
                 :min="0"
                 :max="60"
                 :step="0.5"
                 class="slider"
                 vertical />
               <div class="slider-data">
-                <div>{{ value1ShowVal }}kg</div>
+                <div>{{ forceShowVal }}kg</div>
                 <span class="plus"
-                      @click="changeValue1(0.5)">+</span>
+                      @click="changeForce(0.5)">+</span>
                 <span class="reduce"
-                      @click="changeValue1(-0.5)">-</span>
+                      @click="changeForce(-0.5)">-</span>
+              </div>
+            </div>
+            <!-- 标准模式 -->
+            <div v-show="selectMode === 'STD'"
+                 class="fit-slider">
+              <!-- 显示回力 -->
+              <a-slider
+                v-model:value="back_force"
+                :min="0"
+                :max="100"
+                class="slider"
+                vertical />
+              <div class="slider-data">
+                <div>回力 {{ back_forceShowVal }}</div>
+                <span class="plus"
+                      @click="changeBackForce(0.5)">+</span>
+                <span class="reduce"
+                      @click="changeBackForce(-0.5)">-</span>
               </div>
             </div>
             <div v-show="selectMode === 'SPR'"
@@ -128,7 +152,7 @@
                 运动次数
               </div>
               <div class="number-item">
-                {{ playCount }}
+                {{ playCount }} | {{ playCount2 }}
               </div>
             </div>
             <div class="data-item">
@@ -137,7 +161,7 @@
                 总功率
               </div>
               <div class="number-item">
-                {{ totalW }} w
+                {{ totalW }} w ｜ {{ totalW2 }} w
               </div>
             </div>
           </div>
@@ -149,9 +173,11 @@
                                 @click="readyStart" />
             <PauseCircleOutlined v-show="isPlaying"
                                  @click="pause" />
-            <div class="rect-icon">
-              <span />
-            </div>
+          </div>
+          <div v-show="isPlaying"
+               class="rect-icon"
+               @click="finishGame">
+            <span />
           </div>
         </div>
         <!-- End 右侧form表单 -->
@@ -188,7 +214,6 @@
 </template>
 
 <script lang="ts">
-import { bleSetSingleLight } from '@/api/joyo-ble/index'
 import { formatTime } from '@/utils'
 
 import {
@@ -223,8 +248,6 @@ import { useRoute, useRouter } from 'vue-router'
 
 import { useStore } from 'vuex'
 
-import '@/style/blockly-category.scss'
-
 export default defineComponent({
   name: 'ProFit',
   components: {
@@ -244,20 +267,32 @@ export default defineComponent({
     // @ts-ignore
     const state = reactive({
       // connectStatus: false,
-      value1: 1,
-      value2: 2,
+      // value1: 1,
+      force: 0,
+
       fluid_resis_param: 0,
       spring_rate: 0,
+      back_force: 0,
+
       selectMode: 'STD',
-      showResult: false,
+      // showResult: false,
       hasFirstInit: false, // 是否已经获取初始值力度
       isPlaying: false,
       playTime: 0,
       totalCal: 0, // 卡路里
       playCount: 0, // 运动次数
+      playCount2: 0, // 运动次数
       totalW: 0, // 总功率
+      totalW2: 0, // 总功率
       readyStartTime: -1,
       showOverlay: false,
+
+      // 汇总数据
+      totalWork: '0J',
+      totalTime: '00:00:00',
+      totalPlayTime: '0 | 0',
+      totalAverW: '0w',
+      totalFinalCal: '0cal',
     })
     // const plainOptions =
     // [
@@ -267,11 +302,21 @@ export default defineComponent({
     //   { label: '弹力', value: 3 },
     // ]
 
-    const value1ShowVal = computed(() => { // 看下行否
-      return state.value1.toFixed(1)
+    const forceShowVal = computed(() => { // 看下行否
+      return state.force.toFixed(1)
     })
-    const value2ShowVal = computed(() => { // 看下行否
-      return state.value2.toFixed(1)
+    const showResult = computed(() => { // 看下行否
+      return store.state.showResult
+    })
+
+    watch(() => showResult.value, (val, old) => {
+      if (old && !val) {
+        console.log('重置数据')
+        initAllData()
+      }
+    })
+    const back_forceShowVal = computed(() => { // 看下行否
+      return state.back_force.toFixed(1)
     })
     const spring_rateShowVal = computed(() => { // 看下行否
       return state.spring_rate.toFixed(1)
@@ -280,43 +325,25 @@ export default defineComponent({
       return state.fluid_resis_param.toFixed(1)
     })
     const formatPlayTime = computed(() => { // 看下行否
-      return formatTime(state.playTime)
+      return formatTime(Math.floor(state.playTime))
     })
 
     const goPage = (name: string) => {
       router.push({ name })
     }
 
-    function setPower () { // 设置力量
-
-    }
-
-    function enterShowResult () {
-      store.dispatch('showBackIcon', false)
-    }
-
     const connect = () => {
-      heartBeat()
       connectJoyo()
     }
 
-    let timer = null as any
-
-    function heartBeat () {
-      clearInterval(timer)
-      timer = setInterval(() => { // 定时防止休眠
-        console.log('beat')
-        bleSetSingleLight(11, 0x000000)
-      }, 20000)
+    function changeForce (step: number) {
+      state.force = state.force + step
+    }
+    // 修改回力
+    function changeBackForce (step: number) {
+      state.back_force = state.back_force + step
     }
 
-    function changeValue1 (step: number) {
-      state.value1 = state.value1 + step
-    }
-
-    function changeValue2 (step: number) {
-      state.value2 = state.value2 + step
-    }
     // 修改弹力流阻
     function changeSpring_rate (step: number) {
       state.spring_rate = state.spring_rate + step
@@ -340,24 +367,30 @@ export default defineComponent({
                 state.showOverlay = false
 
                 startPlay()
-              }, 1000)
-            }, 1000)
-          }, 1000)
-        }, 1000)
+              }, 500)
+            }, 500)
+          }, 500)
+        }, 500)
       }, 200)
     }
 
     function initAllData () {
       state.playTime = 0
       state.playCount = 0
+      state.playCount2 = 0
       state.totalW = 0
+      state.totalW2 = 0
+
+      state.totalCal = 0
+      // resetParams()
       // state.isPlaying = true
     }
 
     function resetParams () { // 切换mode时候，重置基础参数
       state.fluid_resis_param = 0
       state.spring_rate = 0
-      state.value1 = 0
+      state.force = 0
+      state.back_force = 0
     }
 
     function startPlay () { // 发送设置力量指令
@@ -368,32 +401,59 @@ export default defineComponent({
       console.log('发送指令')
       console.log('fluid_resis_param', state.fluid_resis_param)
       console.log('spring_rate', state.spring_rate)
-      console.log('force', state.value1)
+      console.log('force', state.force)
       console.log('mode', state.selectMode)
+
+      if (state.selectMode !== 'STD') { // 非标准下设置回力=拉力
+        state.back_force = state.force
+      }
       setTimeout(() => {
         send_fit_build_frame({
           fluid_resis_param: state.fluid_resis_param,
           spring_rate: state.spring_rate,
-          force: state.value1,
+          force: state.force,
+          back_force: state.back_force,
           mode: state.selectMode,
         })
         state.isPlaying = true
       }, 500)
-      // state.playTime = 0
-      // state.playCount = 0
-      // state.totalW = 0
-      // state.isPlaying = true
     }
 
     function pause () {
       pausePlay()
       state.isPlaying = false
     }
+    function finishGame () {
+      pausePlay()
+      state.isPlaying = false
 
-    function handleUpdateData (info: any) { // 更新运动的实时状态
-      state.playTime++
+      state.totalWork = state.totalCal * 4.18 + 'J'
+      state.totalTime = formatTime(Math.floor(state.playTime))
+      state.totalPlayTime = state.playCount + ' | ' + state.playCount2
+      state.totalAverW = Math.round(state.totalCal * 4.18 / state.playTime) + 'w'
+      state.totalFinalCal = state.totalCal + 'cal'
+
+      store.commit('setShowResult', true)
+    }
+
+    function handleUpdateData (info: any, info1: any) { // 更新运动的实时状态
+      // state.playTime++
+      state.playTime = state.playTime + 0.1
+
+      // 运动次数
       state.playCount = info.pull_num
-      state.totalW = Number((info.iq_return / 2 * info.speed / 1000).toFixed(2))
+      state.playCount2 = info1.pull_num
+
+      // state.totalW = state.value1 * 0.1 * obj.info0.speed
+      // state.totalW = state.value1 * 0.1 * obj.info1.speed
+
+      state.totalW = Math.round((info.iq_return / 2 * 0.1 * info.speed))
+      state.totalW2 = Math.round((info1.iq_return / 2 * 0.1 * info1.speed))
+
+      // 卡路里, 这里取两个电机总和，sum( P * 0.1 ) * 4.18
+      const cal1 = Number((state.totalW * 0.1 * 4.18).toFixed(2))
+      const cal2 = Number((state.totalW2 * 0.1 * 4.18).toFixed(2))
+      state.totalCal = state.totalCal + cal1 + cal2
     }
 
     let chart: any
@@ -540,14 +600,18 @@ export default defineComponent({
       // }
       (window as any).webBleNotify = (obj: { info0: any, info1: any }) => {
         console.log('webBleNotify', obj.info0, obj.info1)
+
+        //  P = iq_return / 2 * 0.1 * speed (N m/s)
+
         updateLine(obj.info0, obj.info1)
         if (!state.hasFirstInit) {
-          state.value1 = obj.info0.iq_return / 2
-          state.value2 = obj.info1.iq_return / 2
+          state.force = obj.info0.iq_return / 2 // 拉力
+          state.back_force = obj.info1.iq_return / 2 // 回力
+
           state.hasFirstInit = true
         }
         if (state.isPlaying) { //
-          handleUpdateData(obj.info0)
+          handleUpdateData(obj.info0, obj.info1)
         }
       }
       setTimeout(() => {
@@ -564,19 +628,21 @@ export default defineComponent({
       resetParams,
       connect,
       goPage,
-      changeValue1,
-      changeValue2,
+      changeForce,
+      changeBackForce,
       changeSpring_rate,
       changeFluid_resis_param,
-      value1ShowVal,
-      value2ShowVal,
+      forceShowVal,
+      back_forceShowVal,
       spring_rateShowVal,
       fluid_resis_paramShowVal,
       // plainOptions,
       startPlay,
       readyStart,
       pause,
+      finishGame,
       formatPlayTime,
+      showResult,
     }
   },
 })
@@ -591,6 +657,8 @@ export default defineComponent({
   align-items: center;
 
   .result-box {
+    // width: 100%;
+    // height: 100%;
     .flex-box {
       position: relative;
       width: 100%;
@@ -704,6 +772,24 @@ export default defineComponent({
     &>.anticon {
       cursor: pointer;
       margin-right: 30px;
+    }
+  }
+  .rect-icon {
+    margin-top: 5px;
+    text-align: center;
+    height: 68px;
+    width: 68px;
+    line-height: 53px;
+    border: 6px solid #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    user-select: none;
+    span {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      background-color: #91d5ff;
+      border-radius: 2px;
     }
   }
 

@@ -24,7 +24,6 @@
 </template>
 
 <script lang="ts">
-import { bleSetSingleLight } from '@/api/joyo-ble/index'
 
 import {
   ClientResponse,
@@ -39,11 +38,9 @@ import {
   defineComponent,
   onMounted,
 } from 'vue'
-import { connectJoyo, bleState } from '@/api/joyo-ble/web-ble-server'
+import { connectJoyo } from '@/api/joyo-ble/web-ble-server'
 
 import { useRoute, useRouter } from 'vue-router'
-
-import '@/style/blockly-category.scss'
 
 // declare global {
 //     interface Window {
@@ -67,18 +64,7 @@ export default defineComponent({
     }
 
     const connect = () => {
-      heartBeat()
       connectJoyo()
-    }
-
-    let timer = null as any
-
-    function heartBeat () {
-      clearInterval(timer)
-      timer = setInterval(() => { // 定时防止休眠
-        console.log('beat')
-        bleSetSingleLight(11, 0x000000)
-      }, 20000)
     }
 
     onMounted(() => {

@@ -2,11 +2,6 @@ import { createRouter, createWebHistory, createWebHashHistory, RouteRecordRaw } 
 // import Home from '@/views/Home.vue'
 
 const routes: Array<RouteRecordRaw> = [
-  // {
-  //   path: '/',
-  //   name: 'Home',
-  //   component: () => import(/* webpackChunkName: "art" */ '@/views/ProjectList.vue'),
-  // },
   {
     path: '/',
     name: 'Home',
@@ -20,7 +15,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/quick-fit',
     name: 'QuickFit',
-    component: () => import(/* webpackChunkName: "art" */ '@/views/ProFit.vue'),
+    component: () => import(/* webpackChunkName: "art" */ '@/views/QuickFit.vue'),
   },
   {
     path: '/pro-fit',
@@ -37,47 +32,12 @@ const routes: Array<RouteRecordRaw> = [
     name: 'PowerTest',
     component: () => import(/* webpackChunkName: "art" */ '@/views/PowerTest.vue'),
   },
-  {
-    path: '/menu',
-    name: 'Menu',
-    component: () => import(/* webpackChunkName: "art" */ '@/views/Menu.vue'),
-  },
-  {
-    path: '/mobile',
-    name: 'Mobile',
-    component: () => import(/* webpackChunkName: "art" */ '@/views/Phone.vue'),
-  },
-  {
-    path: '/blockly',
-    name: 'Blockly',
-    component: () => import(/* webpackChunkName: "art" */ '@/views/Blockly.vue'),
-  },
-  // {
-  //   path: '/blockly',
-  //   name: 'Blockly',
-  //   component: () => import(/* webpackChunkName: "art" */ '@/views/Blockly.vue'),
-  // },
-  // todo: 后续删除，临时用途
-  // {
-  //   path: '/check',
-  //   name: 'Check',
-  //   component: () => import(/* webpackChunkName: "art" */ '@/views/check.vue'),
-  // },
-  {
-    path: '/js-editor',
-    name: 'JsEditor',
-    component: () => import(/* webpackChunkName: "art" */ '@/views/Monaco.vue'),
-  },
 ]
 
 const router = createRouter({
   history: createWebHashHistory(),
   routes,
 })
-
-function foo () {
-  return 'by' + 111
-}
 
 function isPC () {
   if (window.navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)) {

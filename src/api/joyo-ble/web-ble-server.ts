@@ -1,18 +1,11 @@
 
 import { reactive } from 'vue'
-import { floatToHex } from './utils'
+// import { floatToHex } from './utils'
 
 let writeCharacteristic = null as any
 let notifyCharacteristic = null as any
 let gattServer: any = null
 let commandService = null as any
-
-// DFU 相关属性
-let DFUControlCharacteristic = null as any // 可notify、可写
-let DFUPackCharacteristic = null as any
-let DFUService = null as any
-let underDFU = false
-const tempBuffer = null as any
 
 export const bleState = reactive({
   connectStatus: false,
@@ -37,10 +30,6 @@ function handleDisconnect () { // TODO：这里同一设备会重复两次
   gattServer = null
   commandService = null
   bleState.connectStatus = false
-
-  DFUControlCharacteristic = null
-  DFUPackCharacteristic = null
-  DFUService = null
 }
 
 export function disconnectJoyo () {
@@ -56,18 +45,17 @@ export function disconnectJoyo () {
   }
 }
 
-// export function reConnectJoyo () { // 重连
-//   //
-// }
-
 // 连接设备
 export function connectJoyo () {
   console.log('Connecting...')
   if (writeCharacteristic === null) {
     naviga.bluetooth.requestDevice({
+      // acceptAllDevices: true,
       filters: [
         { namePrefix: '@' },
-        { namePrefix: 'DDT' },
+        // { services: ['17008380-B0F2-736A-65D2-82593DAE9803'] },
+        // { services: [('17008380-B0F2-736A-65D2-82593DAE9803').toLowerCase()] },
+        // { namePrefix: 'DDT' },
       ],
       optionalServices: [
         ('0000fff0-0000-1000-8000-00805f9b34fb').toLowerCase(),
@@ -113,9 +101,9 @@ export function connectJoyo () {
 
         return notifyCharacteristic.startNotifications().then(() => {
           console.log('> Notifications started')
-          const throttledFunction = throttle(handleNotifications, 1000)
+          // const throttledFunction = throttle(handleNotifications, 100)
           notifyCharacteristic.addEventListener('characteristicvaluechanged',
-            throttledFunction)
+            handleNotifications)
         })
       })
       .catch((err: any) => {
@@ -128,15 +116,7 @@ export function connectJoyo () {
 // eg: [1, 100, 0, 0, 254, 179, 0, 250, 67, 0, 0, 0, 0, 0, 255, 6, 67, 109, 0, 0, 59, 26, 0, 205]
 function handleNotifications (event: any) { // 做一个节流处理，500ms接受一次
   const value = event.target.value
-  // const a = []
-  // const b = new Uint8Array(value)
-  // console.log(value)
-  // console.log(b)
   parse_drive_data(new Uint8Array(value.buffer)) // 注意
-  // for (let i = 0; i < value.byteLength; i++) {
-  //   a.push(value.getUint8(i))
-  // }
-  // console.log('receive', value)
   // window.handleNotifyEvent && window.handleNotifyEvent(a)
   // window.webBleNotify && window.webBleNotify(a)
 }
@@ -187,14 +167,14 @@ function parse_feedback_info (info: any, buffer: any) { // 一秒10次（100ms�
   // 卡路cal = sum( P * 0.1 ) * 4.18
 
   // 标准：两个slide，来回力
-  // 1. 一秒10次（100ms）
-  // 1. 显示两个次数和功率： P = iq_return / 2 * 0.1 * speed (N m/s)
-  // 1. 运动次数：显示两个
-  // 1. 卡路cal = sum( P * 0.1 ) * 4.18
-  // 1. 标准下：拉力和回力
-  // 1. 去掉离心选项
-  // 1. KG的显示除以2
-  // 1. KG的显示除以2
+  // done 1. 一秒10次（100ms）done
+  // done 2. 显示两个次数和功率： P = iq_return / 2 * 0.1 * speed (N m/s)
+  // done 3. 运动次数：显示两个
+  // done 4. 卡路cal = sum( P * 0.1 ) * 4.18
+  // Review 5. 标准下：拉力和回力
+  // done 1. 去掉离心选项
+  // done 1. KG的显示除以2
+  // done 1. KG的显示除以2
   // 力量测试，切换等速
   // 力度 = iq_return / 2   （10-100）
   // 智能健身：小球数值： distance 【 0-50 cm】，速度可调，阻力：拉力回力一致，背景图
@@ -260,6 +240,7 @@ export function send_fit_build_frame (fitObj: any) {
 
   const originFit = {
     force: 0,
+    back_force: 0,
     fluid_resis_param: 0,
     mode: 'STD',
     spring_rate: '0',
@@ -279,7 +260,7 @@ export function send_fit_build_frame (fitObj: any) {
   }
 
   fit_buffer[3] = fit.force * KG2DATA // pull // 力量
-  fit_buffer[4] = fit.force * KG2DATA // back // 回力
+  fit_buffer[4] = fit.back_force * KG2DATA // back // 回力
   fit_buffer[5] = fit.fluid_resis_param * 0.1 // const speed[0,10] 流阻系数
   fit_buffer[6] = 0x00
   fit_buffer[7] = 0x00
@@ -301,62 +282,7 @@ export function sendCommand (command: any) {
   }
 }
 
-// DFU 升级相关，引入DFU库
-export function DFUUpgrade (buffer: any, progressCb: any): Promise<any> { // DFU 升级
-  // dfu.findDevice({
-  //   namePrefix: 'Joyo',
-  // })
-  //   .then((device: any) => {
-  //     console.log('开始writeMode')
-  //     return dfu.writeMode(bleDevice)
-  //   })
-  underDFU = true
-  const dfu = window.dfu
-  return dfu.writeMode(bleDevice)
-    .then((device: any) => {
-      // console.log('开始传输')
-      return transfer(device, buffer, progressCb)
-    })
-    .catch((err: any) => {
-      // console.log('upgrade err')
-      underDFU = false
-      console.log(err)
-    })
-}
-
-function transfer (device: any, buffer: any, progressCb: any) {
-  const dfu = window.dfu
-
-  return new Promise(function (resolve, reject) {
-    dfu.provision(device, buffer, (progress: number) => {
-      progressCb(progress)
-    })
-      .then(() => {
-        console.log('dfu complete')
-        resolve(true)
-        underDFU = false
-      })
-      .catch((error: any) => {
-        console.log(error)
-        reject(error)
-        underDFU = false
-        // setTimeout(() => {
-        //   if (bleDevice) {
-        //     bleDevice.gatt.connect()
-        //   } else {
-        //     console.log('找不到bleDevice')
-        //   }
-        // }, 2000)
-      })
-  })
-}
-
-function handleDFUNotifications (event: any) {
-  const value = event.target.value
-  console.log(value)
-}
-
-function throttle (func: any, delay: number) {
+export function throttle (func: any, delay: number) {
   let timeoutId: any
   let lastExecTime = 0
 

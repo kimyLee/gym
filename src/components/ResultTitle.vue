@@ -1,10 +1,10 @@
 <template>
   <div class="result-title">
     <div class="sub-title">
-      力量测试
+      {{ subTitle }}
     </div>
     <div class="main-title">
-      力量测试报告
+      {{ title }}
     </div>
   </div>
 </template>
@@ -13,10 +13,21 @@
 import { defineComponent, useAttrs, markRaw } from 'vue'
 
 import { SettingOutlined } from '@ant-design/icons-vue'
+import { string } from 'blockly/core/utils'
 
 export default defineComponent({
   name: 'ResultTitle',
   components: {
+  },
+  props: {
+    title: {
+      type: String,
+      default: '',
+    },
+    subTitle: {
+      type: String,
+      default: '',
+    },
   },
   setup () {
     return {
@@ -27,8 +38,10 @@ export default defineComponent({
 
 <style scoped lang="scss">
 @import "~@/style/var.scss";
+
 .result-title::v-deep {
-  width: 400px;
+  width: 60%;
+  margin-left: 20%;
   position: relative;
   height: $headerHeight;
   line-height:$headerHeight;
@@ -43,5 +56,11 @@ export default defineComponent({
     position: absolute;
     transform: translateX(-90%);
   }
+}
+</style>
+<style lang="scss">
+.result-box {
+  width: 100%;
+  height: 100%;
 }
 </style>

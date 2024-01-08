@@ -3,6 +3,10 @@
   font-family: 'myFont';
   src: url('./font.ttf');
 }
+@font-face {
+  font-family: 'myFont2';
+  src: url('./font2.ttf');
+}
 
 .bg-holder {
   position: absolute;

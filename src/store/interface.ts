@@ -1,16 +1,7 @@
 
-// export enum FilterType {
-//   ALL = 'all',
-//   JOYO = 'joyo',
-// }
-
-interface ProjectListItem {
-  uuid: number,
-  name: string,
-  createAt: number,
-  updateAt: number,
-}
-
 export default interface State {
-  projectList: ProjectListItem[]
+  allData: any, // 所有硬件数据
+  allDataInfo2: any, // 所有硬件数据2
+  showResult: boolean,
+  showBackIcon: boolean,
 }

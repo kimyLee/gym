@@ -58,7 +58,7 @@ export default defineComponent({
     }
 
     function goBack () {
-      store.dispatch('setShowResult', false)
+      store.commit('setShowResult', false)
     }
 
     onMounted(() => {

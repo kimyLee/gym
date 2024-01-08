@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :class="{'show-bg': showBg }">
     <div class="bg-holder" />
     <router-view />
   </div>
@@ -9,7 +9,10 @@
 import {
   defineComponent,
   onMounted,
+  computed,
 } from 'vue'
+
+import { useRoute } from 'vue-router'
 
 import { useStore } from 'vuex'
 
@@ -17,6 +20,11 @@ export default defineComponent({
   name: 'App',
 
   setup () {
+    const route = useRoute()
+
+    const showBg = computed(() => { // 看下行否
+      return route.name === 'QuickFit'
+    })
     // const store = useStore()
     // onMounted(() => {
     //   (window as any).webBleNotify = ({ info0, info1 }) => {
@@ -26,6 +34,7 @@ export default defineComponent({
     //   }
     // })
     return {
+      showBg,
     }
   },
 })
@@ -33,6 +42,9 @@ export default defineComponent({
 
 <style lang="scss">
 @import "~@/style/var.scss";
+body {
+  overflow: hidden;
+}
 
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
@@ -45,6 +57,11 @@ export default defineComponent({
   background: $bgColor;
   color: #fff;
   overflow: hidden;
+  .show-bg {
+    width: 100%;
+    height: 100%;
+     background: #3d3d3d;
+  }
 }
 
 #nav {

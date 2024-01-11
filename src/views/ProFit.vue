@@ -59,7 +59,7 @@
               <a-slider
                 v-model:value="force"
                 :min="0"
-                :max="50"
+                :max="60"
                 :step="0.5"
                 class="slider"
                 vertical
@@ -79,7 +79,7 @@
               <a-slider
                 v-model:value="back_force"
                 :min="0"
-                :max="100"
+                :max="60"
                 class="slider"
                 vertical
                 @change="setForce" />
@@ -99,7 +99,8 @@
                 :min="0"
                 :max="100"
                 class="slider"
-                vertical />
+                vertical
+                @change="setForce" />
               <div class="slider-data">
                 <div>弹力 {{ spring_rateShowVal }}</div>
                 <span class="plus"
@@ -116,7 +117,8 @@
                 :min="0"
                 :max="100"
                 class="slider"
-                vertical />
+                vertical
+                @change="setForce" />
               <div class="slider-data">
                 <div>流阻 {{ fluid_resis_paramShowVal }}</div>
                 <span class="plus"
@@ -163,11 +165,11 @@
             <div class="data-item">
               <div class="title-item">
                 <BulbOutlined />
-                总做功
+                瞬时功率
               </div>
               <div class="number-item">
-                {{ totalW }} J
-                <!-- {{ totalW }} w ｜ {{ totalW2 }} w -->
+                <!-- {{ totalW }} J -->
+                {{ totalW }} w ｜ {{ totalW2 }} w
               </div>
             </div>
           </div>
@@ -356,9 +358,13 @@ export default defineComponent({
     // 修改弹力流阻
     function changeSpring_rate (step: number) {
       state.spring_rate = state.spring_rate + step
+
+      setForce()
     }
     function changeFluid_resis_param (step: number) {
       state.fluid_resis_param = state.fluid_resis_param + step
+
+      setForce()
     }
 
     function readyStart () {
@@ -398,11 +404,12 @@ export default defineComponent({
     function resetParams () { // 切换mode时候，重置基础参数
       state.fluid_resis_param = 0
       state.spring_rate = 0
-      state.force = 0
-      state.back_force = 0
+      // state.force = 0
+      // state.back_force = 0
     }
 
     let setTimer = null as any
+
     function setForce () { // 设置力度
       console.log('触发设置')
       if (state.selectMode !== 'STD') { // 非标准下设置回力=拉力
@@ -410,6 +417,7 @@ export default defineComponent({
       }
       clearTimeout(setTimer) // 防抖
       setTimer = setTimeout(() => {
+        // continutePlay()
         // console.log('正常设置')
         send_fit_build_frame({
           fluid_resis_param: state.fluid_resis_param,
@@ -423,7 +431,7 @@ export default defineComponent({
 
     function startPlay () { // 发送设置力量指令
       // 先恢复正常
-      continutePlay()
+      // continutePlay()
 
       // 发送对应指令
       console.log('发送指令')
@@ -444,15 +452,15 @@ export default defineComponent({
           mode: state.selectMode,
         })
         state.isPlaying = true
-      }, 500)
+      }, 1000)
     }
 
     function pause () {
-      pausePlay()
+      // pausePlay()
       state.isPlaying = false
     }
     function finishGame () {
-      pausePlay()
+      // pausePlay()
       state.isPlaying = false
 
       state.totalWork = Math.round(state.totalCal * 4.18) + 'J'
@@ -489,8 +497,10 @@ export default defineComponent({
 
       // todo: 如果误差太大，再用小数点
       state.totalCal = Math.round(Number(cal1 + cal2 + (state.totalCal || 0)))
-      console.log(cal1, cal2, state.totalCal, '||||', info.iq_return, info.speed)
-      state.totalW = Math.round(state.totalCal * 4.18)
+      console.log(info.iq_return, '||||', info1.iq_return, info.speed)
+      // state.totalW = Math.round(state.totalCal * 4.18)
+      state.totalW = totalW
+      state.totalW2 = totalW2
       // state.totalW2 = totalW2
     }
 

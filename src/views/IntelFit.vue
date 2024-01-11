@@ -72,7 +72,8 @@
                                 @click="startGame" />
             <PauseCircleOutlined v-show="isPlaying"
                                  @click="stopGame" />
-            <div class="rect-icon" @click="finishGame">
+            <div class="rect-icon"
+                 @click="finishGame">
               <span />
             </div>
           </div>
@@ -220,6 +221,7 @@ export default defineComponent({
     // 处理力度变化
     const handleForceChange = (distance: number) => {
       state.distance = distance
+      console.log(distance)
       // 处理小球位置
     }
 
@@ -251,7 +253,7 @@ export default defineComponent({
     let myReq: any
 
     function mockAnimation () {
-      state.distance = state.distance + dirc
+      // state.distance = state.distance + dirc
       const factor = getFactor()
       count += factor
       if (count >= 976) {
@@ -318,10 +320,10 @@ export default defineComponent({
     }
 
     onMounted(() => {
-      const throttledHandleForceChange = throttle(handleForceChange, 500);
+      const throttledHandleForceChange = throttle(handleForceChange, 100);
 
       (window as any).webBleNotify = (obj: { info0: any, info1: any }) => {
-        console.log('webBleNotify', obj.info0)
+        // console.log('webBleNotify', obj.info0)
 
         const distance = Math.min(50, Math.abs(obj.info0.distance))
 

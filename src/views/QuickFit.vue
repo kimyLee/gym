@@ -8,7 +8,11 @@
           @click="goHome" />
         <span class="current-time">{{ currentTime }}</span>
       </div>
-
+      <!-- todo: 连接状态 -->
+      <DisconnectOutlined v-show="!connectStatus"
+                          class="right-ble" />
+      <LinkOutlined v-show="connectStatus"
+                    class="right-ble" />
       <SettingOutlined class="right"
                        @click="connect" />
     </div>
@@ -120,10 +124,11 @@
               </div>
               <div class="data-item">
                 <div class="title-item">
-                  平均功率
+                  总做功
                 </div>
                 <div class="number-item">
-                  {{ totalW }} w ｜ {{ totalW2 }} w
+                  <!-- {{ totalW }} w ｜ {{ totalW2 }} w -->
+                  {{ totalW }}
                 </div>
               </div>
               <div class="data-item">
@@ -157,6 +162,11 @@
                @click="pause">
             暂停
           </div>
+          <!-- <div v-show="!isPlaying"
+               class="pause my-btn"
+               @click="startPlay">
+            继续
+          </div> -->
           <div v-show="isPlaying"
                class="finish  my-btn"
                @click="finishGame">
@@ -204,6 +214,8 @@ import {
   PlayCircleOutlined, PauseCircleOutlined, SettingOutlined,
   RollbackOutlined,
   HomeOutlined,
+  LinkOutlined,
+  DisconnectOutlined,
 } from '@ant-design/icons-vue'
 
 import {
@@ -248,26 +260,33 @@ export default defineComponent({
     RollbackOutlined,
     SettingOutlined,
     HomeOutlined,
+    LinkOutlined,
+    DisconnectOutlined,
     ResultTitle,
     ResultDataItem,
   },
 
   setup () {
     const store = useStore()
+
+    const connectStatus = computed(() => { // 看下行否
+      return store.getters['ble/connectStatus']
+    })
     // @ts-ignore
     const state = reactive({
       // connectStatus: false,
       // value1: 1,
       force: 0,
 
-      fluid_resis_param: 0,
-      spring_rate: 0,
+      fluid_resis_param: 50,
+      spring_rate: 50,
       back_force: 0,
 
       selectMode: 'STD',
       // showResult: false,
       hasFirstInit: false, // 是否已经获取初始值力度
       isPlaying: false,
+      isPause: false,
       playTime: 0,
       totalCal: 0, // 卡路里
       totalCalJiaoEr: 0, // 卡路里
@@ -357,6 +376,7 @@ export default defineComponent({
         state.target.value = state.force * 2
         state.target.draw(state.target.value)
       }
+      setForce()
     }
     // 修改回力
     function changeBackForce (step: number) {
@@ -408,7 +428,8 @@ export default defineComponent({
 
     function handleSelectMode (mode: string) {
       state.selectMode = mode
-      resetParams()
+      setForce()
+      // resetParams()
     }
 
     function resetParams () { // 切换mode时候，重置基础参数
@@ -416,6 +437,28 @@ export default defineComponent({
       state.spring_rate = 0
       state.force = 0
       state.back_force = 0
+    }
+
+    function setForce () { // 设置力度
+      console.log('触发设置')
+
+      clearTimeout(setTimer2) // 防抖
+
+      setTimer2 = setTimeout(() => {
+        continutePlay()
+        state.back_force = state.force
+
+        console.log('正常设置', state.selectMode, ' ', state.force)
+        setTimeout(() => {
+          send_fit_build_frame({
+            fluid_resis_param: state.fluid_resis_param,
+            spring_rate: state.spring_rate,
+            force: state.force,
+            back_force: state.back_force,
+            mode: state.selectMode,
+          })
+        }, 500)
+      }, 1000)
     }
 
     function startPlay () { // 发送设置力量指令
@@ -430,10 +473,6 @@ export default defineComponent({
       console.log('mode', state.selectMode)
 
       state.back_force = state.force
-
-      // if (state.selectMode !== 'STD') { // 非标准下设置回力=拉力
-      //   state.back_force = state.force
-      // }
       setTimeout(() => {
         send_fit_build_frame({
           fluid_resis_param: state.fluid_resis_param,
@@ -454,7 +493,7 @@ export default defineComponent({
       pausePlay()
       state.isPlaying = false
 
-      state.totalWork = state.totalCal * 4.18 + 'J'
+      state.totalWork = Math.round(state.totalCal * 4.18) + 'J'
       state.totalTime = formatTime2(Math.floor(state.playTime))
       state.totalPlayTime = state.playCount + ' | ' + state.playCount2
       state.totalAverW = Math.round(state.totalCal * 4.18 / state.playTime) + 'w'
@@ -470,17 +509,21 @@ export default defineComponent({
       state.playCount = info.pull_num
       state.playCount2 = info1.pull_num
 
-      // state.totalW = state.value1 * 0.1 * obj.info0.speed
-      // state.totalW = state.value1 * 0.1 * obj.info1.speed
-
-      state.totalW = Math.round((info.iq_return / 2 * 0.1 * info.speed))
-      state.totalW2 = Math.round((info1.iq_return / 2 * 0.1 * info1.speed))
+      // 瞬时功率
+      const totalW = Math.abs(Math.round((info.iq_return / 2 * 0.1 * info.speed)))
+      const totalW2 = Math.abs(Math.round((info1.iq_return / 2 * 0.1 * info1.speed)))
 
       // 卡路里, 这里取两个电机总和，sum( P * 0.1 ) * 4.18
-      const cal1 = Number((state.totalW * 0.1 * 4.18).toFixed(2))
-      const cal2 = Number((state.totalW2 * 0.1 * 4.18).toFixed(2))
-      state.totalCal = state.totalCal + cal1 + cal2
-      state.totalCalJiaoEr = state.totalCal * 4.18
+
+      const cal1 = Number((totalW * 0.1 * 4.18).toFixed(2)) - 0
+      const cal2 = Number((totalW2 * 0.1 * 4.18).toFixed(2)) - 0
+
+      // todo: 如果误差太大，再用小数点
+      state.totalCal = Math.round(Number(cal1 + cal2 + (state.totalCal || 0)))
+      console.log(cal1, cal2, state.totalCal, '||||', info.iq_return, info.speed)
+      state.totalW = Math.round(state.totalCal * 4.18)
+
+      // state.totalCalJiaoEr = state.totalCal * 4.18
     }
 
     let chart: any
@@ -611,6 +654,8 @@ export default defineComponent({
       store.commit('setShowResult', false)
     }
 
+    let setTimer2 = null as any
+
     onMounted(() => {
       const dom = document.getElementById('content')
       // const DragAcrInstance = (window as any).DragAcr
@@ -622,6 +667,7 @@ export default defineComponent({
         counterclockwise: false,
         change: (v: any) => {
           state.force = v / 2 // 0-50kg
+          setForce()
           console.log(`value:${v}`)
         },
       })
@@ -644,9 +690,15 @@ export default defineComponent({
       //   pull_num,
       // }
       (window as any).webBleNotify = (obj: { info0: any, info1: any }) => {
-        console.log('webBleNotify', obj.info0, obj.info1)
+        // console.log('webBleNotify', obj.info0, obj.info1)
 
         //  P = iq_return / 2 * 0.1 * speed (N m/s)
+        if (!obj?.info0) {
+          return
+        }
+        if (obj?.info0?.iq_return === undefined) {
+          return
+        }
 
         // updateLine(obj.info0, obj.info1)
         if (!state.hasFirstInit) {
@@ -672,7 +724,7 @@ export default defineComponent({
     return {
       ...toRefs(state),
       goHome,
-      resetParams,
+      // resetParams,
       connect,
       goPage,
       changeForce,
@@ -692,6 +744,7 @@ export default defineComponent({
       showResult,
       handleSelectMode,
       goBack,
+      connectStatus,
     }
   },
 })
@@ -736,6 +789,12 @@ $bottomHeight: 120px;
     .right {
       position: absolute;
       right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .right-ble {
+      position: absolute;
+      right: 80px;
       top: 50%;
       transform: translateY(-50%);
     }

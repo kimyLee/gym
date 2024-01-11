@@ -32,6 +32,7 @@
                            option-type="button"
                            :options="plainOptions" /> -->
             <a-radio-group v-model:value="selectMode"
+                           :disabled="isPlaying"
                            size="large"
 
                            @change="resetParams">
@@ -42,10 +43,12 @@
                               :value="5">
                 离心
               </a-radio-button> -->
-              <a-radio-button value="FLU">
+              <a-radio-button value="FLU"
+                              :disabled="isPlaying">
                 等速
               </a-radio-button>
-              <a-radio-button value="SPR">
+              <a-radio-button value="SPR"
+                              :disabled="isPlaying">
                 弹力
               </a-radio-button>
             </a-radio-group>
@@ -56,10 +59,11 @@
               <a-slider
                 v-model:value="force"
                 :min="0"
-                :max="60"
+                :max="50"
                 :step="0.5"
                 class="slider"
-                vertical />
+                vertical
+                @change="setForce" />
               <div class="slider-data">
                 <div>{{ forceShowVal }}kg</div>
                 <span class="plus"
@@ -77,7 +81,8 @@
                 :min="0"
                 :max="100"
                 class="slider"
-                vertical />
+                vertical
+                @change="setForce" />
               <div class="slider-data">
                 <div>回力 {{ back_forceShowVal }}</div>
                 <span class="plus"
@@ -158,10 +163,11 @@
             <div class="data-item">
               <div class="title-item">
                 <BulbOutlined />
-                总功率
+                总做功
               </div>
               <div class="number-item">
-                {{ totalW }} w ｜ {{ totalW2 }} w
+                {{ totalW }} J
+                <!-- {{ totalW }} w ｜ {{ totalW2 }} w -->
               </div>
             </div>
           </div>
@@ -315,6 +321,7 @@ export default defineComponent({
         initAllData()
       }
     })
+
     const back_forceShowVal = computed(() => { // 看下行否
       return state.back_force.toFixed(1)
     })
@@ -338,10 +345,12 @@ export default defineComponent({
 
     function changeForce (step: number) {
       state.force = state.force + step
+      setForce()
     }
     // 修改回力
     function changeBackForce (step: number) {
       state.back_force = state.back_force + step
+      setForce()
     }
 
     // 修改弹力流阻
@@ -393,6 +402,25 @@ export default defineComponent({
       state.back_force = 0
     }
 
+    let setTimer = null as any
+    function setForce () { // 设置力度
+      console.log('触发设置')
+      if (state.selectMode !== 'STD') { // 非标准下设置回力=拉力
+        state.back_force = state.force
+      }
+      clearTimeout(setTimer) // 防抖
+      setTimer = setTimeout(() => {
+        // console.log('正常设置')
+        send_fit_build_frame({
+          fluid_resis_param: state.fluid_resis_param,
+          spring_rate: state.spring_rate,
+          force: state.force,
+          back_force: state.back_force,
+          mode: state.selectMode,
+        })
+      }, 1000)
+    }
+
     function startPlay () { // 发送设置力量指令
       // 先恢复正常
       continutePlay()
@@ -427,7 +455,7 @@ export default defineComponent({
       pausePlay()
       state.isPlaying = false
 
-      state.totalWork = state.totalCal * 4.18 + 'J'
+      state.totalWork = Math.round(state.totalCal * 4.18) + 'J'
       state.totalTime = formatTime(Math.floor(state.playTime))
       state.totalPlayTime = state.playCount + ' | ' + state.playCount2
       state.totalAverW = Math.round(state.totalCal * 4.18 / state.playTime) + 'w'
@@ -438,6 +466,9 @@ export default defineComponent({
 
     function handleUpdateData (info: any, info1: any) { // 更新运动的实时状态
       // state.playTime++
+      if (info.iq_return === undefined) {
+        return
+      }
       state.playTime = state.playTime + 0.1
 
       // 运动次数
@@ -447,13 +478,20 @@ export default defineComponent({
       // state.totalW = state.value1 * 0.1 * obj.info0.speed
       // state.totalW = state.value1 * 0.1 * obj.info1.speed
 
-      state.totalW = Math.round((info.iq_return / 2 * 0.1 * info.speed))
-      state.totalW2 = Math.round((info1.iq_return / 2 * 0.1 * info1.speed))
+      // 瞬时功率
+      const totalW = Math.abs(Math.round((info.iq_return / 2 * 0.1 * info.speed)))
+      const totalW2 = Math.abs(Math.round((info1.iq_return / 2 * 0.1 * info1.speed)))
 
       // 卡路里, 这里取两个电机总和，sum( P * 0.1 ) * 4.18
-      const cal1 = Number((state.totalW * 0.1 * 4.18).toFixed(2))
-      const cal2 = Number((state.totalW2 * 0.1 * 4.18).toFixed(2))
-      state.totalCal = state.totalCal + cal1 + cal2
+
+      const cal1 = Number((totalW * 0.1 * 4.18).toFixed(2)) - 0
+      const cal2 = Number((totalW2 * 0.1 * 4.18).toFixed(2)) - 0
+
+      // todo: 如果误差太大，再用小数点
+      state.totalCal = Math.round(Number(cal1 + cal2 + (state.totalCal || 0)))
+      console.log(cal1, cal2, state.totalCal, '||||', info.iq_return, info.speed)
+      state.totalW = Math.round(state.totalCal * 4.18)
+      // state.totalW2 = totalW2
     }
 
     let chart: any
@@ -599,14 +637,14 @@ export default defineComponent({
       //   pull_num,
       // }
       (window as any).webBleNotify = (obj: { info0: any, info1: any }) => {
-        console.log('webBleNotify', obj.info0, obj.info1)
+        console.log('webBleNotify', obj.info0.iq_return, obj.info1.iq_return)
 
         //  P = iq_return / 2 * 0.1 * speed (N m/s)
 
         updateLine(obj.info0, obj.info1)
         if (!state.hasFirstInit) {
-          state.force = obj.info0.iq_return / 2 // 拉力
-          state.back_force = obj.info1.iq_return / 2 // 回力
+          state.force = (obj.info0.iq_return / 2) || 0 // 拉力
+          state.back_force = (obj.info1.iq_return / 2) || 0 // 回力
 
           state.hasFirstInit = true
         }
@@ -643,6 +681,7 @@ export default defineComponent({
       finishGame,
       formatPlayTime,
       showResult,
+      setForce,
     }
   },
 })

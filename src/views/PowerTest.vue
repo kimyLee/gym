@@ -22,6 +22,7 @@
         <!-- 左边浮动记录信息 -->
         <div class="info-panel">
           阻力（kg）
+          <div>{{ force }}</div>
           <div>{{ forceResult[0] || '--' }}</div>
           <div>{{ forceResult[1] || '--' }}</div>
           <div>{{ forceResult[2] || '--' }}</div>
@@ -50,17 +51,18 @@
             <div v-for="item in 10"
                  :key="item"
                  class="power-bar"
-                 :class="{'active': (force / 10) >= item, 'active2': (maxForce / 10) >= item }"
+
                  :style="{
                    width: (item * 40 + 150) + 'px',
-                   'border-bottom': (item * 6 + 10) + 'px solid #fff',
+
+                   'border-bottom': handleColorStyle(item),
                  }" />
           </div>
 
           <!-- 开始停止按钮 -->
           <div class="start-btn">
-            <PlayCircleOutlined @click="startTest" />
-            <PauseCircleOutlined />
+            <PlayCircleOutlined @click="clickStartTest" />
+            <!-- <PauseCircleOutlined /> -->
             <div class="rect-icon">
               <span />
             </div>
@@ -96,12 +98,16 @@ import {
   defineComponent,
   onMounted,
   onUnmounted,
+  watch,
+  computed,
 } from 'vue'
-import { connectJoyo, throttle, send_fit_build_frame } from '@/api/joyo-ble/web-ble-server'
+import { connectJoyo, throttle, send_fit_build_frame, continutePlay } from '@/api/joyo-ble/web-ble-server'
 
 import ResultTitle from '@/components/ResultTitle.vue'
 import ResultDataItem from '@/components/ResultDataItem.vue'
 import Page from '@/components/Page.vue'
+
+import { useStore } from 'vuex'
 
 export default defineComponent({
   name: 'ProFit',
@@ -112,7 +118,7 @@ export default defineComponent({
     // SyncOutlined,
     // BulbOutlined,
     PlayCircleOutlined,
-    PauseCircleOutlined,
+    // PauseCircleOutlined,
     ResultTitle,
     ResultDataItem,
     SwapRightOutlined,
@@ -131,21 +137,34 @@ export default defineComponent({
       force: 0,
       maxForce: 0,
 
-      maxStep: 30,
-      minStep: 20,
+      maxStep: 5,
+      minStep: 5,
       hasPull: false,
       isTesting: false,
     })
+    const store = useStore()
+
+    const connectStatus = computed(() => { // 看下行否
+      return store.getters['ble/connectStatus']
+    })
+
+    watch(() => connectStatus.value, (val) => {
+      if (val) {
+        initForce()
+      }
+    })
+
+    function clickStartTest () {
+      state.testTimes = 1
+      startTest()
+    }
 
     function startTest () { // 开始测试
-      state.testTimes++
-      if (state.testTimes >= 3) return
+      if (state.testTimes > 3) return
       state.showOverlay = true
+      initForce()
       setTimeout(() => {
         // 确保先进入等速模式
-        send_fit_build_frame({
-          mode: 'FLU',
-        })
 
         state.showOverlay = false
         state.isTesting = true
@@ -153,25 +172,35 @@ export default defineComponent({
     }
 
     function overTest () { // 结束一轮测试
+      state.hasPull = false
       state.isTesting = false
+
+      console.log('结束', state.testTimes, state.maxForce)
       state.forceResult[state.testTimes - 1] = state.maxForce // 填写力度
+      state.maxForce = 0
       setTimeout(() => {
+        state.testTimes++
         startTest()
       }, 500)
     }
 
     // 处理力度变化
     const handleForceChange = (force: number) => {
+      state.force = force
+      console.log(force, '力度')
       if (!state.isTesting) return
+
       if (!state.hasPull && force > state.maxStep) { // 超过一定值视为已拉
+        console.log('已啦')
         state.hasPull = true
       }
       if (state.hasPull && force < state.minStep) { // 力度小于一定值，视为结束一个拉扯
+        console.log('结束啦')
         overTest()
         return
       }
       state.maxForce = Math.max(state.maxForce, force)
-      state.force = force
+      // state.force = force
     }
 
     // 力度收敛，进入下一阶段
@@ -184,11 +213,34 @@ export default defineComponent({
       connectJoyo()
     }
 
+    function initForce () {
+      continutePlay()
+      setTimeout(() => {
+        send_fit_build_frame({
+          mode: 'FLU',
+          force: 10,
+          back_force: 10,
+          fluid_resis_param: 100,
+        })
+      }, 500)
+    }
+
+    function handleColorStyle (item: number) {
+      if ((state.force / 4) > (10 - item)) {
+        return (item * 6 + 10) + 'px solid rgb(24, 144, 255)'
+      } else if ((state.maxForce / 4) >= (10 - item)) {
+        return (item * 6 + 10) + 'px solid rgb(24, 144, 255, .4)'
+      }
+      return (item * 6 + 10) + 'px solid #fff'
+    }
+
     onMounted(() => {
-      const throttledHandleForceChange = throttle(handleForceChange, 500);
+      initForce()
+
+      const throttledHandleForceChange = throttle(handleForceChange, 300);
 
       (window as any).webBleNotify = (obj: { info0: any, info1: any }) => {
-        console.log('webBleNotify', obj.info0, obj.info1)
+        // console.log('力度', obj.info0.iq_return)
 
         throttledHandleForceChange(obj.info0.iq_return / 2)
       }
@@ -202,7 +254,8 @@ export default defineComponent({
       ...toRefs(state),
       connect,
       goPage,
-      startTest,
+      clickStartTest,
+      handleColorStyle,
     }
   },
 })

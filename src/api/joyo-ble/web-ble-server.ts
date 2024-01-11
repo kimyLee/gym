@@ -124,30 +124,30 @@ function handleNotifications (event: any) { // 做一个节流处理，500ms接�
 function parse_drive_data (buffer: any) {
   const info0 = {} as any
   const info1 = {} as any
-  console.log('是否匹配', buffer[23] === calculateCRC8(buffer.slice(0, -1)))
-  console.log(calculateCRC8(buffer.slice(0, -1)), buffer[23])
+  // console.log('是否匹配', buffer[23] === calculateCRC8(buffer.slice(0, -1)))
+  // console.log(calculateCRC8(buffer.slice(0, -1)), buffer[23])
   if (buffer.length === 24 &&
     buffer[23] === calculateCRC8(buffer.slice(0, -1))
   ) {
     parse_feedback_info(info0, buffer.slice(2))
     parse_feedback_info(info1, buffer.slice(10))
     info0.temp_mos = buffer[17]
-    console.log('温度', info0.temp_mos)
+    // console.log('温度', info0.temp_mos)
     info0.err = buffer[18]
-    console.log('错误信息', info0.err)
+    // console.log('错误信息', info0.err)
     info0.mode = buffer[19]
-    console.log('M_mode', info0.mode)
+    // console.log('M_mode', info0.mode)
     info0.temp = buffer[20]
-    console.log('电机1温度', info0.temp_mos)
+    // console.log('电机1温度', info0.temp_mos)
     info1.temp = buffer[21]
-    console.log('电机2温度', info1.temp_mos)
+    // console.log('电机2温度', info1.temp_mos)
   } else if (buffer.length === 20 &&
     buffer[0] === 1 &&
     buffer[19] === calculateCRC8(buffer.slice(0, -1))
   ) {
     parse_feedback_info20(info0, buffer.slice(2))
     parse_feedback_info20(info1, buffer.slice(8))
-    console.info(info0)
+    // console.info(info0)
   }
   window.webBleNotify && window.webBleNotify({ info0, info1 })
   return { info0, info1 }
@@ -157,13 +157,13 @@ function parse_drive_data (buffer: any) {
 function parse_feedback_info (info: any, buffer: any) { // 一秒10次（100ms）
   const dv = new DataView(buffer.buffer)
   info.iq_return = dv.getInt16(0, false)
-  console.log('力值', info.iq_return) // 显示两个： P = iq_return / 2 * 0.1 * speed (N m/s)
+  // console.log('力值', info.iq_return) // 显示两个： P = iq_return / 2 * 0.1 * speed (N m/s)
   info.speed = dv.getInt16(2, false) //
-  console.log('速度', info.speed)
+  // console.log('速度', info.speed)
   info.distance = dv.getInt16(4, false) //
-  console.log('距离', info.distance)
+  // console.log('距离', info.distance)
   info.pull_num = buffer[6]
-  console.log('pull num', info.pull_num) // 运动次数：显示两个
+  // console.log('pull num', info.pull_num) // 运动次数：显示两个
   // 卡路cal = sum( P * 0.1 ) * 4.18
 
   // 标准：两个slide，来回力

@@ -233,6 +233,42 @@ export function continutePlay () {
   })
 }
 
+// 设置座椅1命令
+export function send_chair01_frame (direction: number) { // direction: 0|1
+  // const KG2DATA = 2 // 假设KG2DATA为2
+  const fit_buffer = new Uint8Array(9)
+  fit_buffer[0] = 1
+  fit_buffer[1] = 51
+  fit_buffer[2] = direction // 0: 正转， 1 反转
+  fit_buffer[3] = 0
+  fit_buffer[4] = 0
+  fit_buffer[5] = 0
+  fit_buffer[6] = 0
+  fit_buffer[7] = 0
+  fit_buffer[8] = 0
+  fit_buffer[9] = calculateCRC8(fit_buffer.slice(0, -1))
+  console.log('发送指令' + Array.from(fit_buffer))
+  sendCommand(fit_buffer)
+  return fit_buffer
+}
+// 设置座椅2命令
+export function send_chair02_frame (direction: number) { // direction: 0|1｜2
+  // const KG2DATA = 2 // 假设KG2DATA为2
+  const fit_buffer = new Uint8Array(9)
+  fit_buffer[0] = 1
+  fit_buffer[1] = 52
+  fit_buffer[2] = direction // 0: 正转， 1 反转
+  fit_buffer[3] = 0
+  fit_buffer[4] = 0
+  fit_buffer[5] = 0
+  fit_buffer[6] = 0
+  fit_buffer[7] = 0
+  fit_buffer[8] = 0
+  fit_buffer[9] = calculateCRC8(fit_buffer.slice(0, -1))
+  console.log('发送指令' + Array.from(fit_buffer))
+  sendCommand(fit_buffer)
+  return fit_buffer
+}
 // 通用设置命令
 export function send_fit_build_frame (fitObj: any) {
   const KG2DATA = 2 // 假设KG2DATA为2

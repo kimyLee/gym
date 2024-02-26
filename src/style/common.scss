@@ -7,6 +7,14 @@
   font-family: 'myFont2';
   src: url('./font2.ttf');
 }
+@font-face {
+  font-family: 'myFont-zh';
+  src: url('./GLOWSANSSC-NORMAL-LIGHT.OTF');
+}
+@font-face {
+  font-family: 'myFont-en';
+  src: url('./HGF4_CNKI.TTF');
+}
 
 .bg-holder {
   position: absolute;
@@ -28,6 +36,7 @@
   display: flex;
   flex-direction: column;
   font-family: myFont;
+  // font-family: myFont-en, myFont-zh, myFont;
   .logo {
       position: absolute;
       left: 20px;

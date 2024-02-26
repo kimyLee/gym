@@ -54,7 +54,6 @@
 
                  :style="{
                    width: (item * 40 + 150) + 'px',
-
                    'border-bottom': handleColorStyle(item),
                  }" />
           </div>
@@ -113,12 +112,7 @@ export default defineComponent({
   name: 'ProFit',
   components: {
     Page,
-    // HistoryOutlined,
-    // FireOutlined,
-    // SyncOutlined,
-    // BulbOutlined,
     PlayCircleOutlined,
-    // PauseCircleOutlined,
     ResultTitle,
     ResultDataItem,
     SwapRightOutlined,

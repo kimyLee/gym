@@ -4,7 +4,11 @@ export class DragAcr {
   constructor (param: any) {
     this.initParam(param)
     this.draw((this as any).value)
+
   }
+
+  colorRing = ['#0000ff', '#0d0dff', '#1b1bff', '#2828ff', '#3636ff', '#4343ff', '#5151ff', '#5e5eff', '#6b6bff', '#7979ff', '#8686ff', '#9494ff', '#a1a1ff', '#aeaeff', '#bcbcff', '#c9c9ff', '#d7d7ff', '#e4e4ff', '#f2f2ff', '#ffffff', '#ffffff', '#fffff2', '#ffffe4', '#ffffd7', '#ffffc9', '#ffffbc', '#ffffae', '#ffffa1', '#ffff94', '#ffff86', '#ffff79', '#ffff6b', '#ffff5e', '#ffff51', '#ffff43', '#ffff36', '#ffff28', '#ffff1b', '#ffff0d', '#ffff00', '#ffff00', '#fffa00', '#fff600', '#fff100', '#ffec00', '#ffe700', '#ffe300', '#ffde00', '#ffd900', '#ffd400', '#ffd000', '#ffcb00', '#ffc600', '#ffc100', '#ffbd00', '#ffb800', '#ffb300', '#ffae00', '#ffaa00', '#ffa500', '#ffa500', '#ff9c00', '#ff9400', '#ff8b00', '#ff8200', '#ff7a00', '#ff7100', '#ff6800', '#ff6000', '#ff5700', '#ff4e00', '#ff4500', '#ff3d00', '#ff3400', '#ff2b00', '#ff2300', '#ff1a00', '#ff1100', '#ff0900', '#ff0000', '#ff0000']
+
 
   initParam (this: any, param: any) {
     const {
@@ -16,7 +20,7 @@ export class DragAcr {
       innerLineWidth = 1,
       outLineWidth = 20,
       counterclockwise = true,
-      slider = 15,
+      slider = 30,
       color = ['#06dabc', '#33aaff'],
       // sliderColor = '#fff',
       sliderColor = '#0796ff',
@@ -29,8 +33,11 @@ export class DragAcr {
     } = param
 
     this.el = el
-    this.width = el.offsetWidth
-    this.height = el.offsetHeight
+    const devicePixelRatio = window.devicePixelRatio || 2
+    this.width = el.offsetWidth * devicePixelRatio
+    this.height = el.offsetHeight * devicePixelRatio
+    
+
     this.center = this.width / 2
     this.centerHeight = this.height / 2
     this.radius = this.width / 2 - 30 // 滑动路径半径
@@ -63,9 +70,14 @@ export class DragAcr {
     this.canvas = document.createElement('canvas')
     this.canvas.setAttribute('id', 'dragArc')
     this.canvas.setAttribute('width', this.width)
-    this.canvas.setAttribute('height', this.width)
+    this.canvas.setAttribute('height', this.height)
+
+    this.canvas.style.width = this.width / 2 + 'px'
+    this.canvas.style.height = this.height / 2 + 'px'
+    
     dom.appendChild(this.canvas)
     this.ctx = this.canvas.getContext('2d')
+    // this.ctx.scale(this.devicePixelRatio / 2, this.devicePixelRatio / 2);
 
     var ua = navigator.userAgent
     var isAndroid = /(?:Android)/.test(ua)
@@ -116,22 +128,28 @@ export class DragAcr {
     // const anglePerTick = ((5/4 * Math.PI) - (3/4 * Math.PI)) / totalTicks;
 
     const centerX = this.center
-    const centerY = this.centerHeight - 20
+    const centerY = this.center
+    // const centerY = this.centerHeight - 20
+
+    
     const radius = this.radius
+    console.log(radius)
     const ctx = this.ctx
+
+    const radiusOffset = 20
 
     for (let i = 0; i < totalTicks; i++) {
       const angle = i * anglePerTick + (3 / 4 * Math.PI);
-      const startX = centerX + Math.cos(angle) * (radius - 12);
-      const startY = centerY + Math.sin(angle) * (radius - 12);
-      const endX = centerX + Math.cos(angle) * (radius + 12);
-      const endY = centerY + Math.sin(angle) * (radius + 12);
+      const startX = centerX + Math.cos(angle) * (radius - 40);
+      const startY = centerY + Math.sin(angle) * (radius - 40);
+      const endX = centerX + Math.cos(angle) * (radius + 10);
+      const endY = centerY + Math.sin(angle) * (radius + 10);
 
       ctx.beginPath();
       ctx.moveTo(startX, startY);
       ctx.lineTo(endX, endY);
       if ((i / totalTicks) <= (value / 100)) {
-         ctx.strokeStyle = this.sliderColor;
+         ctx.strokeStyle = this.colorRing[i];
       } else {
          ctx.strokeStyle = '#fff';
       }
@@ -144,7 +162,8 @@ export class DragAcr {
     this.P = this.DegToXY(Deg)
     this.ctx.beginPath()
     this.ctx.moveTo(this.center, this.center)
-    this.ctx.arc(this.P.x, this.P.y, this.slider + 5, 0, Math.PI * 2, false) // 绘制滑块内侧
+    // this.ctx.arc(this.P.x, this.P.y, this.slider + 5, 0, Math.PI * 2, false) // 绘制滑块内侧
+    this.ctx.arc(this.P.x, this.P.y, this.slider + 8, 0, Math.PI * 2, false) // 绘制滑块内侧
     this.ctx.fillStyle = this.sliderBorderColor
     this.ctx.fill()
     this.ctx.beginPath()
@@ -175,8 +194,8 @@ export class DragAcr {
   DegToXY (this: any, deg: any) {
     const d = 2 * Math.PI - deg
     return this.respotchangeXY({
-      x: this.radius * Math.cos(d),
-      y: this.radius * Math.sin(d),
+      x: (this.radius - 10) * Math.cos(d),
+      y: (this.radius - 10) * Math.sin(d),
     })
   }
 
@@ -273,6 +292,7 @@ export class DragAcr {
     const maxX = P.x + this.slider + range
     const minY = P.y - this.slider - range
     const maxY = P.y + this.slider + range
+    console.log(P.x, P.y, '|', X, Y)
     if (minX < X && X < maxX && minY < Y && Y < maxY) { // 判断鼠标是否在滑块上
       this.isDown = true
     } else {
@@ -307,14 +327,16 @@ export class DragAcr {
 
   // 获取鼠标在canvas内坐标x
   getx (this: any, ev: any) {
-    if (!this.isMobile) return ev.clientX - this.el.getBoundingClientRect().left
-    return ev.touches[0].pageX - this.el.getBoundingClientRect().left
+    const devicePixelRatio = window.devicePixelRatio || 2
+    if (!this.isMobile) return (ev.clientX - this.el.getBoundingClientRect().left) * devicePixelRatio
+    return (ev.touches[0].pageX - this.el.getBoundingClientRect().left) * devicePixelRatio
   }
 
   // 获取鼠标在canvas内坐标y
   gety (this: any, ev: any) {
-    if (!this.isMobile) return ev.clientY - this.el.getBoundingClientRect().top
-    return ev.touches[0].pageY - this.el.getBoundingClientRect().top
+    const devicePixelRatio = window.devicePixelRatio || 2
+    if (!this.isMobile) return (ev.clientY - this.el.getBoundingClientRect().top) * devicePixelRatio
+    return (ev.touches[0].pageY - this.el.getBoundingClientRect().top) * devicePixelRatio
   }
 
   // 节流

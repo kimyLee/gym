@@ -32,6 +32,52 @@ const routes: Array<RouteRecordRaw> = [
     name: 'PowerTest',
     component: () => import(/* webpackChunkName: "art" */ '@/views/PowerTest.vue'),
   },
+  // 新美术UI
+  {
+    path: '/menu1',
+    name: 'Menu1',
+    component: () => import(/* webpackChunkName: "art" */ '@/views/UI/Menu.vue'),
+  },
+  {
+    path: '/quick-fit-1',
+    name: 'QuickFit1',
+    component: () => import(/* webpackChunkName: "art" */ '@/views/UI/QuickFit.vue'),
+  },
+  // {
+  //   path: '/pro-fit-1',
+  //   name: 'ProFit1',
+  //   component: () => import(/* webpackChunkName: "art" */ '@/views/UI/ProFit.vue'),
+  // },
+  {
+    path: '/pro-fit-menu',
+    name: 'ProFitMenu',
+    component: () => import(/* webpackChunkName: "art" */ '@/views/UI/ProMenu.vue'),
+  },
+  {
+    path: '/pro-fit-01',
+    name: 'ProFit01',
+    component: () => import(/* webpackChunkName: "art" */ '@/views/UI/ProFit01.vue'),
+  },
+  {
+    path: '/pro-fit-02',
+    name: 'ProFit02',
+    component: () => import(/* webpackChunkName: "art" */ '@/views/UI/ProFit02.vue'),
+  },
+  {
+    path: '/pro-fit-03',
+    name: 'ProFit03',
+    component: () => import(/* webpackChunkName: "art" */ '@/views/UI/ProFit03.vue'),
+  },
+  {
+    path: '/intel-fit-1',
+    name: 'IntelFit1',
+    component: () => import(/* webpackChunkName: "art" */ '@/views/UI/IntelFit.vue'),
+  },
+  {
+    path: '/power-test-1',
+    name: 'PowerTest1',
+    component: () => import(/* webpackChunkName: "art" */ '@/views/UI/PowerTest.vue'),
+  },
 ]
 
 const router = createRouter({

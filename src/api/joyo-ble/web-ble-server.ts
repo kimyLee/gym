@@ -236,7 +236,7 @@ export function continutePlay () {
 // 设置座椅1命令
 export function send_chair01_frame (direction: number) { // direction: 0|1
   // const KG2DATA = 2 // 假设KG2DATA为2
-  const fit_buffer = new Uint8Array(9)
+  const fit_buffer = new Uint8Array(10)
   fit_buffer[0] = 1
   fit_buffer[1] = 51
   fit_buffer[2] = direction // 0: 正转， 1 反转
@@ -254,7 +254,7 @@ export function send_chair01_frame (direction: number) { // direction: 0|1
 // 设置座椅2命令
 export function send_chair02_frame (direction: number) { // direction: 0|1｜2
   // const KG2DATA = 2 // 假设KG2DATA为2
-  const fit_buffer = new Uint8Array(9)
+  const fit_buffer = new Uint8Array(10)
   fit_buffer[0] = 1
   fit_buffer[1] = 52
   fit_buffer[2] = direction // 0: 正转， 1 反转

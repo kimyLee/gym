@@ -127,7 +127,7 @@ export default defineComponent({
     }
     function endLongPress1 () {
       console.log('Long press over')
-      send_chair01_frame(2)
+      send_chair01_frame(0x02)
       clearInterval(state.timer)
       state.timer = null
     }

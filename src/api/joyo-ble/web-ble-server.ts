@@ -238,15 +238,15 @@ export function send_chair01_frame (direction: number) { // direction: 0|1
   // const KG2DATA = 2 // 假设KG2DATA为2
   const fit_buffer = new Uint8Array(10)
   fit_buffer[0] = 1
-  fit_buffer[1] = 51
-  fit_buffer[2] = direction // 0: 正转， 1 反转
+  fit_buffer[1] = 0x51
+  fit_buffer[2] = direction // 0: 正转， 1 反转, 2: 挺
   fit_buffer[3] = 0
   fit_buffer[4] = 0
   fit_buffer[5] = 0
   fit_buffer[6] = 0
   fit_buffer[7] = 0
   fit_buffer[8] = 0
-  fit_buffer[9] = calculateCRC8(fit_buffer.slice(0, -1))
+  fit_buffer[9] = direction === 0 ? 0xFA : (direction === 1 ? 0xC7 : 0x80)
   console.log('发送指令' + Array.from(fit_buffer))
   sendCommand(fit_buffer)
   return fit_buffer

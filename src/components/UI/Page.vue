@@ -222,7 +222,7 @@ export default defineComponent({
     background-position: center center;
     position: absolute;
     right: 13px;
-    top: 80px;
+    top: 22px;
     border: 1px solid #fff;
     border-radius: 50%;
   }

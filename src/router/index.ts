@@ -34,6 +34,11 @@ const routes: Array<RouteRecordRaw> = [
   },
   // 新美术UI
   {
+    path: '/start',
+    name: 'Start',
+    component: () => import(/* webpackChunkName: "art" */ '@/views/UI/StartPage.vue'),
+  },
+  {
     path: '/menu1',
     name: 'Menu1',
     component: () => import(/* webpackChunkName: "art" */ '@/views/UI/Menu.vue'),

@@ -1,18 +1,18 @@
 <template>
   <div class="header-nav-ui">
     <div class="home-box">
-      <div
-        class="icon icon-home left-bottom"
-        @click="goHome" />
+      <div class="icon icon-home left-bottom"
+           @click="goHome" />
       <span class="current-time">{{ currentTime }}<span class="current-pm">{{ currentPM }}</span></span>
     </div>
     <DisconnectOutlined v-show="!connectStatus"
-                        class="right-ble" />
+                        class="right-ble"
+                        @click="connectJoyo" />
     <LinkOutlined v-show="connectStatus"
                   class="right-ble" />
     <!-- 设置按钮 -->
-    <div class="right icon icon-setting"
-         @click="connectJoyo" />
+    <!-- <div class="right icon icon-setting"
+         @click="connectJoyo" /> -->
     <!-- <SettingOutlined class="right"
                      @click="connectJoyo" /> -->
   </div>
@@ -116,7 +116,6 @@ export default defineComponent({
     align-items: center;
   }
   .current-time {
-    // margin-left: 20px;
     margin-top: 5px;
     font-size: 20px;
     font-weight: 300;
@@ -129,13 +128,14 @@ export default defineComponent({
   }
   .right {
     position: absolute;
-    right: 12px;
+    right: 72px;
     top: 50%;
     transform: translateY(-50%);
   }
   .right-ble {
     position: absolute;
     right: 72px;
+    // right: 132px;
     top: 50%;
     transform: translateY(-50%);
   }

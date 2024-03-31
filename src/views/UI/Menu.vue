@@ -88,6 +88,7 @@ import {
   reactive,
   defineComponent,
   onMounted,
+  computed,
 } from 'vue'
 import { connectJoyo, bleState } from '@/api/joyo-ble/web-ble-server'
 
@@ -95,6 +96,8 @@ import HeaderNav from '@/components/HeaderNav.vue'
 import Page from '@/components/UI/Page.vue'
 
 import { useRoute, useRouter } from 'vue-router'
+import { message } from 'ant-design-vue'
+import { useStore } from 'vuex'
 
 export default defineComponent({
   name: 'Menu',
@@ -106,13 +109,20 @@ export default defineComponent({
   setup () {
     // @ts-ignore
     const state = reactive({
-      connectStatus: false,
       showMenu1: false,
-      //
+    })
+
+    const store = useStore()
+    const connectStatus = computed(() => { // 看下行否
+      return store.getters['ble/connectStatus']
     })
 
     const goPage = (name: string) => {
-      router.push({ name })
+      if (connectStatus.value) {
+        router.push({ name })
+      } else {
+        message.info('设备未连接，请先连接蓝牙')
+      }
     }
 
     const connect = () => {

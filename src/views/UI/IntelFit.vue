@@ -575,7 +575,7 @@ export default defineComponent({
     // background-size: cover;
 
     position: absolute;
-    left: 50px;
+    left: 60px;
     top: 0;
     transform: translateY(-50%);
     &.up {

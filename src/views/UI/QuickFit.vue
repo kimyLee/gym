@@ -22,9 +22,8 @@
                           :data="totalFinalCal" />
         </div>
         <!-- 返回按钮 -->
-        <div
-          class="icon-back-ui right-bottom"
-          @click="goBack" />
+        <div class="icon-back-ui right-bottom"
+             @click="goBack" />
       </div>
 
       <div v-show="!showResult"
@@ -66,11 +65,11 @@
               </div>
               <div class="data-item">
                 <div class="title-item">
-                  总做功
+                  总做功<span style="font-size: 14px;">(J)</span>
                 </div>
                 <div class="number-item">
                   <!-- {{ totalW }} w ｜ {{ totalW2 }} w -->
-                  <span class="big-text">{{ totalW }}</span>J
+                  <span class="big-text">{{ totalW }}</span>
                 </div>
               </div>
               <div class="data-item">
@@ -83,10 +82,10 @@
               </div>
               <div class="data-item">
                 <div class="title-item">
-                  能量消耗
+                  能量消耗<span style="font-size: 14px;">(Kcal)</span>
                 </div>
                 <div class="number-item">
-                  <span class="big-text">{{ totalCal }}</span> Kcal
+                  <span class="big-text">{{ totalCal }}</span>
                 </div>
               </div>
             </div>
@@ -96,6 +95,7 @@
         <div class="start-btn-box">
           <div v-show="!isPlaying"
                class="start my-btn"
+               :class="{ 'disable': !connectStatus }"
                @click="readyStart">
             开始
           </div>
@@ -219,7 +219,7 @@ export default defineComponent({
       isPlaying: false,
       isPause: false,
       playTime: 0,
-      totalCal: 922, // 卡路里
+      totalCal: 0, // 卡路里
       totalCalJiaoEr: 0, // 卡路里
       playCount: 0, // 运动次数
       playCount2: 0, // 运动次数
@@ -459,83 +459,6 @@ export default defineComponent({
       // state.totalCalJiaoEr = state.totalCal * 4.18
     }
 
-    let chart: any
-
-    const windowCnt = 40 // 一个波形绘图窗口数据点数
-    const charData = {
-      torque: new Array(windowCnt),
-      torque1: new Array(windowCnt), // 电机2
-      speed: new Array(windowCnt),
-      speed1: new Array(windowCnt),
-      rope_distance: new Array(windowCnt),
-      rope_distance1: new Array(windowCnt),
-    }
-
-    function updateLine (info0: any, info1: any) {
-      if (isNaN(info0.iq_return) || isNaN(info1.iq_return)) return
-      charData.torque.shift()
-      charData.torque1.shift()
-      charData.torque[windowCnt - 1] = info0.iq_return / 2
-      charData.torque1[windowCnt - 1] = info1.iq_return / 2
-
-      charData.speed.shift()
-      charData.speed1.shift()
-      charData.speed[windowCnt - 1] = info0.speed
-      charData.speed1[windowCnt - 1] = info1.speed
-
-      charData.rope_distance.shift()
-      charData.rope_distance1.shift()
-      charData.rope_distance[windowCnt - 1] = info0.distance
-      charData.rope_distance1[windowCnt - 1] = info1.distance
-
-      var option = {
-        animation: false,
-        series: [{
-          // name: 't',
-          name: 't',
-          type: 'line',
-          data: charData.torque,
-        }, {
-          name: 'v',
-          type: 'line',
-          data: charData.speed,
-        }, {
-          name: 'p',
-          type: 'line',
-          data: charData.rope_distance,
-        }, {
-          name: 't1',
-          type: 'line',
-          data: charData.torque1,
-        }, {
-          name: 'v1',
-          type: 'line',
-          data: charData.speed1,
-        }, {
-          name: 'p1',
-          type: 'line',
-          data: charData.rope_distance1,
-        }],
-      }
-
-      // var optionGauge = {
-      //   backgroundColor: "#ffffff",
-      //   series: [{
-      //     animation: false,
-      //     data: [{
-      //       // value: parseInt( (1+Math.sin(time)) * 50 ),
-      //       value: info0.iq_return,
-      //       name: '力量',
-      //     }]
-      //   }]
-      // };
-      if (chart) {
-        chart.setOption(option)
-      }
-
-      // chartGauge.setOption(optionGauge)
-    }
-
     function goBack () {
       state.showResult = false
       // store.commit('setShowResult', false)
@@ -559,23 +482,6 @@ export default defineComponent({
         },
       })
       state.target = a;
-      // const info0 = {
-      //   temp_mos,
-      //   err,
-      //   mode,
-      //   iq_return,
-      //   temp,
-      //   speed,
-      //   distance,
-      //   pull_num,
-      // }
-      // const info1 = {
-      //   iq_return,
-      //   temp,
-      //   speed,
-      //   distance,
-      //   pull_num,
-      // }
       (window as any).webBleNotify = (obj: { info0: any, info1: any }) => {
         // console.log('webBleNotify', obj.info0, obj.info1)
 
@@ -650,6 +556,7 @@ $bottomHeight: 120px;
   align-items: center;
   font-weight: 300;
   font-size: 36px;
+  user-select: none;
 
   .header-nav::v-deep {
     width: 100%;
@@ -737,17 +644,24 @@ $bottomHeight: 120px;
       }
     }
     .slider-btn {
-      position:absolute;
+      position: absolute;
       left: 50%;
+      /* top: 0; */
       transform: translate(-50%);
-      bottom: 50px;
+      bottom: 73px;
+      height: 50px;
+      width: 130px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       .plus,.reduce {
         font-size: 56px;
         font-weight: bold;
         cursor: pointer;
         width: 80px;
         height: 80px;
-        padding: 0 10px;
+        // padding: 0 10px;
         line-height: 80px;
 
         border-radius: 2px;
@@ -937,8 +851,11 @@ $bottomHeight: 120px;
       height: 88px;
       line-height: 88px;
       border-radius: 44px;
-      // padding: 20px;
-      background-color: #0d92f5;
+      background-color: $btnBlue;
+      &.disable {
+          opacity: .4;
+          pointer-events: none;
+        }
       &:last-child {
          margin-left: 20px;
       }

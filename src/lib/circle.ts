@@ -27,7 +27,9 @@ export class DragAcr {
       // sliderBorderColor = '#33aaff',
       sliderBorderColor = '#fff',
       value = 0,
-      change = (v: any) => { console.log(v) },
+      change = (v: any) => {
+        // console.log(v)
+      },
       // textShow = true,
       textShow = false,
     } = param
@@ -133,7 +135,6 @@ export class DragAcr {
 
     
     const radius = this.radius
-    console.log(radius)
     const ctx = this.ctx
 
     const radiusOffset = 20
@@ -259,12 +260,10 @@ export class DragAcr {
     evpoint.x = this.getx(evt)
     evpoint.y = this.gety(evt)
     const point = this.spotchangeXY(evpoint)
-    console.log('x: ', point.x, ' y: ', point.y)
     let deg = this.XYToDeg(point.x, point.y)
     deg = this.counterclockwise ? deg : Math.PI * 2 - deg
     
     // let val = (deg / Math.PI - this.startDeg) / (this.endDeg - this.startDeg) * 100
-    // console.log(deg, val, 'deg')
     const radian = deg / Math.PI;
     let val =
 			((radian - (radian > this.startDeg ? this.startDeg : -this.residueDeg)) /
@@ -284,17 +283,19 @@ export class DragAcr {
   }
 
   OnMouseDown (this: any, evt: any) {
-    const range = 10
+    console.log('OnMouseDown')
+    const range = 30
     const X = this.getx(evt)
     const Y = this.gety(evt)
     const P = this.P
     const minX = P.x - this.slider - range
     const maxX = P.x + this.slider + range
-    const minY = P.y - this.slider - range
-    const maxY = P.y + this.slider + range
-    console.log(P.x, P.y, '|', X, Y)
+    const minY = P.y - this.slider - range - 10
+    const maxY = P.y + this.slider 
+    console.log('X: ' + X + ' Y: ' + Y + ' minX:' + minX + ' minY:' + minY + ' maxX:' + maxX + ' maxY:' + maxY )
     if (minX < X && X < maxX && minY < Y && Y < maxY) { // 判断鼠标是否在滑块上
       this.isDown = true
+      console.log('OnMouseDown true')
     } else {
       this.isDown = false
     }
@@ -363,7 +364,7 @@ function main () {
     outColor: '#eee',
     counterclockwise: true,
     change: (v: any) => {
-      console.log(`value:${v}`)
+      // console.log(`value:${v}`)
     },
   })
 }

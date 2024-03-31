@@ -94,6 +94,7 @@
         <div class="start-btn-box">
           <div v-show="!isPlaying"
                class="start my-btn"
+               :class="{'disable': !connectStatus}"
                @click="readyStart">
             开始
           </div>
@@ -149,21 +150,6 @@
 <script lang="ts">
 import { formatTime2 } from '@/utils'
 
-import {
-  HistoryOutlined, FireOutlined, SyncOutlined, BulbOutlined,
-  PlayCircleOutlined, PauseCircleOutlined, SettingOutlined,
-  RollbackOutlined,
-  HomeOutlined,
-  LinkOutlined,
-  DisconnectOutlined,
-} from '@ant-design/icons-vue'
-
-import {
-  ClientResponse,
-  ClientResponseWithData,
-  BleList,
-} from '@/api/common-type'
-
 import router from '@/router'
 import {
   toRefs,
@@ -204,7 +190,6 @@ export default defineComponent({
     })
     // @ts-ignore
     const state = reactive({
-      // connectStatus: false,
       // value1: 1,
       force: 0,
 
@@ -938,7 +923,11 @@ $bottomHeight: 120px;
       line-height: 88px;
       border-radius: 44px;
       // padding: 20px;
-      background-color: #0d92f5;
+      background-color: $btnBlue;
+      &.disable {
+        opacity: .4;
+        pointer-events: none;
+      }
       &:last-child {
          margin-left: 20px;
       }

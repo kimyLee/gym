@@ -1,7 +1,15 @@
 <template>
   <div :class="{'show-bg': showBg }">
     <div class="bg-holder" />
-    <router-view />
+    <router-view v-slot="{ Component }">
+      <Transition name="my-fade"
+                  mode="out-in">
+        <component :is="Component" />
+      </Transition>
+    </router-view>
+    <!-- <Transition name="my-fade" mode="out-in">
+      <router-view />
+    </Transition> -->
   </div>
 </template>
 <script lang="ts">
@@ -75,5 +83,19 @@ body {
 
 #nav a.router-link-exact-active {
   color: #42b983;
+}
+
+.my-fade-enter-active,
+.my-fade-leave-active {
+  transition: opacity .8s ease;
+}
+
+.my-fade-enter-from,
+.my-fade-leave-to {
+  opacity: 0;
+}
+.my-fade-enter-to,
+.my-fade-leave {
+  opacity: 1;
 }
 </style>

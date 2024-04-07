@@ -1,5 +1,6 @@
 <template>
   <div class="page-ui">
+    <PopBack />
     <HeaderNav />
     <Transition name="fade-up">
       <div v-show="showPageAnimation || showSlot"
@@ -40,10 +41,8 @@
         </div>
       </div>
       <div class="start-btn-box">
-        <div
-          class="start my-btn"
-
-          @click="showChair = false">
+        <div class="start my-btn"
+             @click="showChair = false">
           确定
         </div>
       </div>
@@ -63,6 +62,7 @@ import {
 } from '@ant-design/icons-vue'
 
 import HeaderNav from '@/components/UI/HeaderNav.vue'
+import PopBack from '@/components/UI/PopBack.vue'
 
 import router from '@/router'
 
@@ -80,6 +80,7 @@ export default defineComponent({
     RightCircleOutlined,
     UpCircleOutlined,
     DownCircleOutlined,
+    PopBack,
     // HomeOutlined,
     // RollbackOutlined,
   },

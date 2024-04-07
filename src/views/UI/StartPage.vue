@@ -10,13 +10,6 @@
           开始训练 START
         </div>
       </div>
-      <!-- <Transition name="fade">
-        <div v-if="showBtn" class="home-btn-box ">
-          <div class="home-btn" @click="goMenu">
-            <span class="active-btn-left">》</span>开始训练<span class="active-btn-right">《</span>
-          </div>
-        </div>
-      </Transition> -->
     </div>
   </div>
 </template>
@@ -95,7 +88,7 @@ export default defineComponent({
   justify-content: center;
 
   background-blend-mode: multiply;
-  position: relative;
+  // position: relative;
 
   .start-img {
     width: 100%;
@@ -174,15 +167,4 @@ export default defineComponent({
     }
 }
 
-</style>
-<style>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 1s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
 </style>

@@ -22,9 +22,8 @@
                           :data="totalFinalCal" />
         </div>
         <!-- 返回按钮 -->
-        <div
-          class="icon-back-ui right-bottom"
-          @click="goBack" />
+        <div class="icon-back-ui right-bottom"
+             @click="goBack" />
       </div>
       <div v-show="!showResult"
            class="page-content">
@@ -33,7 +32,8 @@
             <div class="tag-text">
               快速健身-离心模式
             </div>
-            <div class="slider-box">
+            <div class="slider-box"
+                 :class="{ 'disable': isPlaying }">
               <div id="content" />
 
               <div class="show-text">
@@ -172,6 +172,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 
 import { DragAcr } from '@/lib/circle'
+// import startClickTimer from '@/lib/sleep'
 
 export default defineComponent({
   name: 'ProFit',
@@ -287,10 +288,10 @@ export default defineComponent({
     }
 
     function changeForce (step: number) {
-      state.force = Math.min(50, Math.max(0, state.force + step))
+      state.force = Math.min(60, Math.max(0, state.force + step))
 
       if (state.target) {
-        state.target.value = state.force * 2
+        state.target.value = Math.floor(state.force / 6 * 5 * 2) //
         state.target.draw(state.target.value)
       }
       setForce()
@@ -529,6 +530,8 @@ export default defineComponent({
     let setTimer2 = null as any
 
     onMounted(() => {
+      // 监听60s点击屏幕
+
       const dom = document.getElementById('content')
       // const DragAcrInstance = (window as any).DragAcr
       const a = new DragAcr({
@@ -538,7 +541,7 @@ export default defineComponent({
         outColor: '#eee',
         counterclockwise: false,
         change: (v: any) => {
-          state.force = v / 2 // 0-50kg
+          state.force = v / 5 * 3 // 0-60kg
           setForce()
           console.log(`value:${v}`)
         },
@@ -589,6 +592,7 @@ export default defineComponent({
     })
 
     onUnmounted(() => {
+      // cancelFunction && cancelFunction() // 执行注销函数
       state.target = null;
       (window as any).webBleNotify = null
     })
@@ -697,6 +701,10 @@ $bottomHeight: 120px;
     justify-content: center;
     text-align: center;
     position: relative;
+    &.disable {
+      opacity: .6;
+      pointer-events: none;
+    }
 
     #content {
       width: 100%;

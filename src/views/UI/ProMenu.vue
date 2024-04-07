@@ -1,6 +1,7 @@
 
 <template>
   <Page>
+    <PopBack />
     <div class="pro-menu-box">
       <div class="menu-title">
         专业健身模式选择
@@ -141,7 +142,7 @@ export default defineComponent({
 
   $TitleHeight: 60px;
   .menu-title {
-    padding-left: 200px;
+    padding-left: 180px;
     height: $TitleHeight;
   }
   .pro-menus {

@@ -5,9 +5,8 @@
       <div class="quick-fit">
         <div v-if="showResult"
              class="result-box">
-          <RollbackOutlined
-            class="right-bottom"
-            @click="goBack" />
+          <RollbackOutlined class="right-bottom"
+                            @click="goBack" />
           <ResultTitle title="运动总结"
                        sub-title="快速健身" />
           <!-- 具体报告 -->
@@ -51,7 +50,8 @@
                   弹力
                 </div>
               </div> -->
-              <div class="slider-box">
+              <div class="slider-box"
+                   :class="{ 'disable': isPlaying }">
                 <div id="content" />
 
                 <div class="show-text">
@@ -328,10 +328,10 @@ export default defineComponent({
     }
 
     function changeForce (step: number) {
-      state.force = Math.min(50, Math.max(0, state.force + step))
+      state.force = Math.min(60, Math.max(0, state.force + step))
 
       if (state.target) {
-        state.target.value = state.force * 2
+        state.target.value = Math.floor(state.force / 6 * 5 * 2) //
         state.target.draw(state.target.value)
       }
       setForce()
@@ -577,7 +577,7 @@ export default defineComponent({
         outColor: '#eee',
         counterclockwise: false,
         change: (v: any) => {
-          state.force = v / 2 // 0-50kg
+          state.force = v / 5 * 3 // 0-60kg
           setForce()
           console.log(`value:${v}`)
         },
@@ -765,6 +765,10 @@ $bottomHeight: 120px;
     justify-content: center;
     text-align: center;
     position: relative;
+    &.disable {
+      opacity: .6;
+      pointer-events: none;
+    }
 
     #content {
       width: 100%;

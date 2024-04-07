@@ -19,7 +19,7 @@
       <!-- 左边浮动记录信息 -->
       <div class="info-panel">
         <div class="panel-title">
-          阻力（kg）
+          阻力（ kg ）
         </div>
         <div class="panel-data">
           <!-- <div>{{ force }}</div> -->
@@ -35,8 +35,25 @@
         </div>
       </div>
       <!-- 右侧提示语 -->
-      <div class="info-panel-right">
+      <div v-show="testTimes < 1"
+           class="info-panel-right">
+        使用说明：<br /><br />
+        1. 请把座椅调节至合适位置<br />
+        2. 点击开始按钮
+      </div>
+      <div v-show="testTimes === 1"
+           class="info-panel-right">
+        第一次测试：<br /><br />
+        在保证安全的前提下请用你的最大力去做运动
+      </div>
+      <div v-show="testTimes === 2"
+           class="info-panel-right">
         第二次测试：<br /><br />
+        在保证安全的前提下请用你的最大力去做运动
+      </div>
+      <div v-show="testTimes === 3"
+           class="info-panel-right">
+        第三次测试：<br /><br />
         在保证安全的前提下请用你的最大力去做运动
       </div>
       <div v-if="!showResult"
@@ -97,11 +114,9 @@
       </div>
 
       <!-- 加载动画特效 -->
-      <div
-        v-show="showOverlay"
-        class="over-layer">
-        <div
-          class="progress-bar">
+      <div v-show="showOverlay"
+           class="over-layer">
+        <div class="progress-bar">
           第{{ testTimes }}次测试
         </div>
       </div>
@@ -242,14 +257,14 @@ export default defineComponent({
       setTimeout(() => {
         send_fit_build_frame({
           mode: 'FLU',
-          force: 10,
-          back_force: 10,
+          force: 5,
+          back_force: 5,
           fluid_resis_param: 100,
         })
       }, 500)
     }
 
-    const colors = ['#0000ff', '#2727ff', '#4e4eff', '#7676ff', '#9d9dff', '#c4c4ff', '#ebebff', '#ffffff', '#ffffd8', '#ffffb1', '#ffff89', '#ffff62', '#ffff3b', '#ffff14', '#ffff00', '#fff100', '#ffe300', '#ffd500', '#ffc800', '#ffba00', '#ffac00', '#ff9e00', '#ffa500', '#ff8c00', '#ff7200', '#ff5900', '#ff3f00', '#ff2600', '#ff0d00', '#ff0000']
+    const colors = ['#1B4B9E', '#1B4B9E', '#66C4E0', '#66C4E0', '#66C4E0', '#c4c4ff', '#ebebff', '#ffffff', '#ffffd8', '#ffffb1', '#ffff89', '#ffff62', '#ffff3b', '#ffff14', '#ffff00', '#fff100', '#ffe300', '#ffd500', '#ffc800', '#ffba00', '#ffac00', '#ff9e00', '#ffa500', '#ff8c00', '#ff7200', '#ff5900', '#ff3f00', '#ff2600', '#ff0d00', '#ff0000']
     function handleColorStyle (item: number) {
       if ((state.force / 4 * 3) > (30 - item)) {
         return `5px solid ${colors[colors.length - item]}`
@@ -289,7 +304,7 @@ export default defineComponent({
     onMounted(() => {
       initForce()
 
-      const throttledHandleForceChange = throttle(handleForceChange, 300);
+      const throttledHandleForceChange = throttle(handleForceChange, 200);
 
       (window as any).webBleNotify = (obj: { info0: any, info1: any }) => {
         // console.log('力度', obj.info0.iq_return)
@@ -340,7 +355,8 @@ export default defineComponent({
   .info-panel-right {
     position: absolute;
     right: 20px;
-    bottom: 145px;
+    // bottom: 145px;
+    bottom: 155px;
     // transform: translateY(-50%);
     width: 190px;
     height: 240px;
@@ -348,6 +364,7 @@ export default defineComponent({
     background-color: #000;
     padding: 15px;
     box-sizing: border-box;
+
   }
   .info-panel {
     position: absolute;
@@ -357,9 +374,10 @@ export default defineComponent({
     width: 190px;
     height: 300px;
     font-size: 24px;
+    color: rgba(255, 255, 255, .8);
     .panel-title {
       background-color: #000;
-      padding: 10px;
+      padding: 15px 10px;
     }
     .panel-data {
       margin-top: 10px;
@@ -437,7 +455,7 @@ export default defineComponent({
     margin: 0 auto;
     flex: 1;
     overflow: hidden;
-    padding: 20px 0;
+    // padding: 20px 0;
     box-sizing: border-box;
 
     .progress {
@@ -448,15 +466,15 @@ export default defineComponent({
 
       .step-icon {
         display: inline-block;
-        width: 50px;
-        height: 30px;
-        line-height: 30px;
-        border-radius: 20px;
+        width: 78px;
+        height: 50px;
+        line-height: 50px;
+        border-radius: 50px;
         background-color: #fff;
         // border: 1px solid #fff;
         text-align: center;
         color: $blue;
-        font-size: 24px;
+        font-size: 36px;
         font-weight: 400;
         &.active {
           background-color: $blue;
@@ -480,9 +498,11 @@ export default defineComponent({
       margin-top: 30px;
       .cover-left {
         position: absolute;
-        top: -420px;
+        // top: -420px;
+        top: -378px;
         left: -120px;
-        width: 277px;
+        // width: 277px;
+        width: 270px;
         height: 700px;
         border-radius: 710px 0px;
         pointer-events: none;
@@ -491,9 +511,10 @@ export default defineComponent({
       }
       .cover-right {
         position: absolute;
-        top: -420px;
+        // top: -420px;
+        top: -378px;
         right: -120px;
-        width: 277px;
+        width: 270px;
         height: 700px;
         border-radius:  0px 710px;
         pointer-events: none;
@@ -568,4 +589,5 @@ export default defineComponent({
   100% {
     background-position: 120px 0;
   }
-}</style>
+}
+</style>

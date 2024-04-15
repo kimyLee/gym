@@ -1,6 +1,9 @@
 
 <template>
   <Page show-slot>
+    <PopForce v-model:showPop="showPop"
+              :val="force"
+              @change-force="setPopForce" />
     <div class="pro-fit-01">
       <div v-show="showResult"
            class="result-box-ui">
@@ -39,7 +42,8 @@
               <div class="show-text">
                 阻力调节
               </div>
-              <div class="show-num">
+              <div class="show-num"
+                   @click="showPop= true">
                 {{ forceShowVal }}<span class="small">kg</span>
               </div>
               <div class="slider-btn">
@@ -166,6 +170,7 @@ import HeaderNav from '@/components/HeaderNav.vue'
 import ResultTitle from '@/components/ResultTitle.vue'
 import ResultDataItem from '@/components/ResultDataItem.vue'
 import Page from '@/components/UI/Page.vue'
+import PopForce from '@/components/UI/PopForce.vue'
 
 import { useRoute, useRouter } from 'vue-router'
 
@@ -181,6 +186,7 @@ export default defineComponent({
     // RollbackOutlined,
     ResultTitle,
     ResultDataItem,
+    PopForce,
   },
 
   setup () {
@@ -193,6 +199,7 @@ export default defineComponent({
     const state = reactive({
       // value1: 1,
       force: 0,
+      showPop: false,
 
       fluid_resis_param: 50,
       spring_rate: 50,
@@ -285,6 +292,16 @@ export default defineComponent({
 
     const connect = () => {
       connectJoyo()
+    }
+
+    function setPopForce (val: number) {
+      state.force = val
+
+      if (state.target) {
+        state.target.value = Math.floor(state.force / 6 * 5 * 2) //
+        state.target.draw(state.target.value)
+      }
+      setForce()
     }
 
     function changeForce (step: number) {
@@ -604,6 +621,7 @@ export default defineComponent({
       connect,
       goPage,
       changeForce,
+      setPopForce,
       changeBackForce,
       changeSpring_rate,
       changeFluid_resis_param,

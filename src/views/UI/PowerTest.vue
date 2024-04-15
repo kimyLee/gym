@@ -7,13 +7,16 @@
         <ResultTitle />
         <!-- 具体报告 -->
         <div class="flex-box">
-          <ResultDataItem />
-          <ResultDataItem />
+          <ResultDataItem title="最大力量"
+                          :data="getMaxPower()" />
         </div>
         <div class="flex-box">
-          <ResultDataItem />
-          <ResultDataItem />
-          <ResultDataItem />
+          <ResultDataItem title="测试次数"
+                          :data="testTimes + ''" />
+          <ResultDataItem title="平均力量"
+                          :data="getAvgPower()" />
+          <ResultDataItem title="建议运动阻力"
+                          :data="getSugPower()" />
         </div>
       </div>
       <!-- 左边浮动记录信息 -->
@@ -107,7 +110,8 @@
           </div>
 
           <div v-show="isTesting"
-               class="finish  my-btn">
+               class="finish my-btn"
+               @click="gameOver">
             结束
           </div>
         </div>
@@ -199,7 +203,10 @@ export default defineComponent({
     }
 
     function startTest () { // 开始测试
-      if (state.testTimes > 3) return
+      if (state.testTimes > 3) {
+        gameOver()
+        return
+      }
       state.showOverlay = true
       initForce()
       setTimeout(() => {
@@ -221,6 +228,23 @@ export default defineComponent({
         state.testTimes++
         startTest()
       }, 500)
+    }
+
+    // 三次测试后，进入测试报告页面
+    function gameOver () {
+      state.showResult = true
+      state.hasPull = false
+      state.isTesting = false
+    }
+
+    function getMaxPower () {
+      return Math.max(state.forceResult[0], state.forceResult[1], state.forceResult[2]) + ''
+    }
+    function getAvgPower () {
+      return ((state.forceResult[0] + state.forceResult[1] + state.forceResult[2]) / 3).toFixed(1)
+    }
+    function getSugPower () {
+      return (((state.forceResult[0] + state.forceResult[1] + state.forceResult[2]) / 3) * 0.6).toFixed(1)
     }
 
     // 处理力度变化
@@ -325,6 +349,10 @@ export default defineComponent({
       handleColorStyle,
       handleForceStyleLeft,
       handleForceStyleTop,
+      gameOver,
+      getMaxPower,
+      getAvgPower,
+      getSugPower,
       forceShowVal,
     }
   },

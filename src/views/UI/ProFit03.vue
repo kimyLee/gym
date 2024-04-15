@@ -1,187 +1,157 @@
-
 <template>
-  <div class="page quick-fit-box">
-    <Page show-slot>
-      <div class="quick-fit">
-        <div v-if="showResult"
-             class="result-box">
-          <RollbackOutlined class="right-bottom"
-                            @click="goBack" />
-          <ResultTitle title="运动总结"
-                       sub-title="快速健身" />
-          <!-- 具体报告 -->
-          <div class="flex-box">
-            <ResultDataItem title="总做功"
-                            :data="totalWork" />
-            <ResultDataItem title="运动总时长"
-                            :data="totalTime" />
+  <Page show-slot>
+    <PopForce v-model:showPop="showPop"
+              :val="force"
+              @change-force="setPopForce" />
+    <div class="pro-fit-03">
+      <div v-show="showResult"
+           class="result-box-ui">
+        <ResultTitle title="运动总结"
+                     sub-title="快速健身" />
+        <!-- 具体报告 -->
+        <div class="flex-box">
+          <ResultDataItem title="总做功"
+                          :data="totalWork" />
+          <ResultDataItem title="运动总时长"
+                          :data="totalTime" />
+        </div>
+        <div class="flex-box">
+          <ResultDataItem title="运动次数"
+                          :data="totalPlayTime" />
+          <ResultDataItem title="平均功率"
+                          :data="totalAverW" />
+          <ResultDataItem title="热量消耗"
+                          :data="totalFinalCal" />
+        </div>
+        <!-- 返回按钮 -->
+        <div class="icon-back-ui right-bottom"
+             @click="goBack" />
+      </div>
+      <div v-show="!showResult"
+           class="page-content">
+        <div class="half-box">
+          <div class="half half-left">
+            <div class="tag-text">
+              快速健身-弹力模式
+            </div>
+            <div class="slider-box"
+                 :class="{ 'disable': isPlaying }">
+              <div id="content" />
+
+              <div class="show-text">
+                阻力调节
+              </div>
+              <div class="show-num"
+                   @click="showPop = true">
+                {{ forceShowVal }}<span class="small">kg</span>
+              </div>
+              <div class="slider-btn">
+                <span class="reduce"
+                      @click="changeForce(-0.5)">-</span>
+                <span class="plus"
+                      @click="changeForce(0.5)">+</span>
+              </div>
+            </div>
           </div>
-          <div class="flex-box">
-            <ResultDataItem title="运动次数"
-                            :data="totalPlayTime" />
-            <ResultDataItem title="平均功率"
-                            :data="totalAverW" />
-            <ResultDataItem title="热量消耗"
-                            :data="totalFinalCal" />
+          <!-- 右侧form表单 -->
+          <div class="half half-right">
+            <!-- echart 背景图 -->
+            <div>
+              <div class="data-item">
+                <div class="title-item">
+                  运动次数
+                </div>
+                <div class="number-item">
+                  <span class="big-text">{{ playCount }} | {{ playCount2 }}</span>
+                </div>
+              </div>
+              <div class="data-item">
+                <div class="title-item">
+                  总做功
+                </div>
+                <div class="number-item">
+                  <!-- {{ totalW }} w ｜ {{ totalW2 }} w -->
+                  <span class="big-text">{{ totalW }}</span>J
+                </div>
+              </div>
+              <div class="data-item">
+                <div class="title-item">
+                  运动时长
+                </div>
+                <div class="number-item">
+                  <span class="big-text">{{ formatPlayTime }}</span>
+                </div>
+              </div>
+              <div class="data-item">
+                <div class="title-item">
+                  能量消耗
+                </div>
+                <div class="number-item">
+                  <span class="big-text">{{ totalCal }}</span> Kcal
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div v-if="!showResult"
-             class="page-content">
-          <div class="half-box">
-            <div class="half half-left">
-              <div class="tag-text">
-                快速健身
-              </div>
-              <!-- <div class="mode-box">
-                <div class="quick-btn"
-                     :class="{'active': selectMode === 'STD'}"
-                     @click="handleSelectMode('STD')">
-                  标准
-                </div>
-                <div class="quick-btn"
-                     :class="{ 'active': selectMode === 'FLU' }"
-                     @click="handleSelectMode('FLU')">
-                  等速
-                </div>
-                <div class="quick-btn"
-                     :class="{ 'active': selectMode === 'SPR' }"
-                     @click="handleSelectMode('SPR')">
-                  弹力
-                </div>
-              </div> -->
-              <div class="slider-box"
-                   :class="{ 'disable': isPlaying }">
-                <div id="content" />
-
-                <div class="show-text">
-                  阻力调节
-                </div>
-                <div class="show-num">
-                  {{ forceShowVal }}<span class="small">kg</span>
-                </div>
-                <div class="slider-btn">
-                  <span class="reduce"
-                        @click="changeForce(-0.5)">-</span>
-                  <span class="plus"
-                        @click="changeForce(0.5)">+</span>
-                </div>
-              </div>
-            </div>
-            <!-- 右侧form表单 -->
-            <div class="half half-right">
-              <!-- echart 背景图 -->
-              <div>
-                <div class="data-item">
-                  <div class="title-item">
-                    运动次数
-                  </div>
-                  <div class="number-item">
-                    <span class="big-text">{{ playCount }} | {{ playCount2 }}</span>
-                  </div>
-                </div>
-                <div class="data-item">
-                  <div class="title-item">
-                    总做功
-                  </div>
-                  <div class="number-item">
-                    <!-- {{ totalW }} w ｜ {{ totalW2 }} w -->
-                    <span class="big-text">{{ totalW }}</span>J
-                  </div>
-                </div>
-                <div class="data-item">
-                  <div class="title-item">
-                    运动时长
-                  </div>
-                  <div class="number-item">
-                    <span class="big-text">{{ formatPlayTime }}</span>
-                  </div>
-                </div>
-                <div class="data-item">
-                  <div class="title-item">
-                    能量消耗
-                  </div>
-                  <div class="number-item">
-                    <span class="big-text">{{ totalCal }}</span> Kcal
-                  </div>
-                </div>
-              </div>
-            </div>
+        <!-- 开始按钮 -->
+        <div class="start-btn-box">
+          <div v-show="!isPlaying"
+               class="start my-btn"
+               :class="{ 'disable': !connectStatus }"
+               @click="readyStart">
+            开始
           </div>
-          <!-- 开始按钮 -->
-          <div class="start-btn-box">
-            <div v-show="!isPlaying"
-                 class="start my-btn"
-                 @click="readyStart">
-              开始
-            </div>
-            <div v-show="isPlaying"
-                 class="pause my-btn"
-                 @click="pause">
-              暂停
-            </div>
-            <!-- <div v-show="!isPlaying"
+          <div v-show="isPlaying"
+               class="pause my-btn"
+               @click="pause">
+            暂停
+          </div>
+          <!-- <div v-show="!isPlaying"
                class="pause my-btn"
                @click="startPlay">
             继续
           </div> -->
-            <div v-show="isPlaying"
-                 class="finish  my-btn"
-                 @click="finishGame">
-              结束
-            </div>
+          <div v-show="isPlaying"
+               class="finish  my-btn"
+               @click="finishGame">
+            结束
           </div>
-
-          <!-- End 右侧form表单 -->
         </div>
-        <!-- 加载动画特效 -->
-        <div v-show="showOverlay"
-             class="over-layer">
-          <Transition name="scale">
-            <div v-show="readyStartTime === 3"
-                 class="over-num">
-              <div>3</div>
-            </div>
-          </Transition>
-          <Transition name="scale">
-            <div v-show="readyStartTime === 2"
-                 class="over-num">
-              <div>2</div>
-            </div>
-          </Transition>
-          <Transition name="scale">
-            <div v-show="readyStartTime === 1"
-                 class="over-num">
-              <div>1</div>
-            </div>
-          </Transition>
-          <div v-show="readyStartTime === 0"
-               class="progress-bar">
-            开始训练
+
+        <!-- End 右侧form表单 -->
+      </div>
+      <!-- 加载动画特效 -->
+      <div v-show="showOverlay"
+           class="over-layer">
+        <Transition name="scale">
+          <div v-show="readyStartTime === 3"
+               class="over-num">
+            <div>3</div>
           </div>
+        </Transition>
+        <Transition name="scale">
+          <div v-show="readyStartTime === 2"
+               class="over-num">
+            <div>2</div>
+          </div>
+        </Transition>
+        <Transition name="scale">
+          <div v-show="readyStartTime === 1"
+               class="over-num">
+            <div>1</div>
+          </div>
+        </Transition>
+        <div v-show="readyStartTime === 0"
+             class="progress-bar">
+          开始训练
         </div>
       </div>
-    </Page>
-  </div>
+    </div>
+  </Page>
 </template>
 
 <script lang="ts">
 import { formatTime2 } from '@/utils'
-
-import {
-  HistoryOutlined, FireOutlined, SyncOutlined, BulbOutlined,
-  PlayCircleOutlined, PauseCircleOutlined, SettingOutlined,
-  RollbackOutlined,
-  HomeOutlined,
-  LinkOutlined,
-  DisconnectOutlined,
-} from '@ant-design/icons-vue'
-
-import {
-  ClientResponse,
-  ClientResponseWithData,
-  BleList,
-} from '@/api/common-type'
 
 import router from '@/router'
 import {
@@ -199,27 +169,23 @@ import HeaderNav from '@/components/HeaderNav.vue'
 import ResultTitle from '@/components/ResultTitle.vue'
 import ResultDataItem from '@/components/ResultDataItem.vue'
 import Page from '@/components/UI/Page.vue'
+import PopForce from '@/components/UI/PopForce.vue'
 
 import { useRoute, useRouter } from 'vue-router'
 
 import { useStore } from 'vuex'
 
 import { DragAcr } from '@/lib/circle'
+// import startClickTimer from '@/lib/sleep'
 
 export default defineComponent({
   name: 'ProFit',
   components: {
     Page,
-    // HistoryOutlined,
-    // FireOutlined,
-    // SyncOutlined,
-    // BulbOutlined,
-    // PlayCircleOutlined,
-    // PauseCircleOutlined,
-    RollbackOutlined,
-    // HomeOutlined,
+    // RollbackOutlined,
     ResultTitle,
     ResultDataItem,
+    PopForce,
   },
 
   setup () {
@@ -230,16 +196,16 @@ export default defineComponent({
     })
     // @ts-ignore
     const state = reactive({
-      // connectStatus: false,
       // value1: 1,
       force: 0,
+      showPop: false,
 
       fluid_resis_param: 50,
       spring_rate: 50,
       back_force: 0,
 
       selectMode: 'STD',
-      // showResult: false,
+      showResult: false,
       hasFirstInit: false, // 是否已经获取初始值力度
       isPlaying: false,
       isPause: false,
@@ -296,11 +262,11 @@ export default defineComponent({
     const forceShowVal = computed(() => { // 看下行否
       return state.force.toFixed(1)
     })
-    const showResult = computed(() => { // 看下行否
-      return store.state.showResult
-    })
+    // const showResult = computed(() => { // 看下行否
+    //   return store.state.showResult
+    // })
 
-    watch(() => showResult.value, (val, old) => {
+    watch(() => state.showResult, (val, old) => {
       if (old && !val) {
         console.log('重置数据')
         initAllData()
@@ -325,6 +291,16 @@ export default defineComponent({
 
     const connect = () => {
       connectJoyo()
+    }
+
+    function setPopForce (val: number) {
+      state.force = val
+
+      if (state.target) {
+        state.target.value = Math.floor(state.force / 6 * 5 * 2) //
+        state.target.draw(state.target.value)
+      }
+      setForce()
     }
 
     function changeForce (step: number) {
@@ -457,7 +433,8 @@ export default defineComponent({
       state.totalAverW = Math.round(state.totalCal * 4.18 / state.playTime) + 'w'
       state.totalFinalCal = state.totalCal + 'cal'
 
-      store.commit('setShowResult', true)
+      // store.commit('setShowResult', true)
+      state.showResult = true
     }
 
     function handleUpdateData (info: any, info1: any) { // 更新运动的实时状态
@@ -562,12 +539,15 @@ export default defineComponent({
     }
 
     function goBack () {
-      store.commit('setShowResult', false)
+      state.showResult = false
+      // store.commit('setShowResult', false)
     }
 
     let setTimer2 = null as any
 
     onMounted(() => {
+      // 监听60s点击屏幕
+
       const dom = document.getElementById('content')
       // const DragAcrInstance = (window as any).DragAcr
       const a = new DragAcr({
@@ -628,6 +608,7 @@ export default defineComponent({
     })
 
     onUnmounted(() => {
+      // cancelFunction && cancelFunction() // 执行注销函数
       state.target = null;
       (window as any).webBleNotify = null
     })
@@ -639,6 +620,7 @@ export default defineComponent({
       connect,
       goPage,
       changeForce,
+      setPopForce,
       changeBackForce,
       changeSpring_rate,
       changeFluid_resis_param,
@@ -652,7 +634,7 @@ export default defineComponent({
       pause,
       finishGame,
       formatPlayTime,
-      showResult,
+      // showResult,
       handleSelectMode,
       goBack,
       connectStatus,
@@ -665,52 +647,49 @@ export default defineComponent({
 @import "~@/style/var.scss";
 
 $bottomHeight: 120px;
-.quick-fit-box {
+
+.pro-fit-03 {
   background-color: #3d3d3d;
-  font-weight: 300;
-
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  max-width: 960px;
-  max-height: 600px;
-
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
   display: flex;
-  flex-direction: column;
-  font-size: 36px;
+  height: 100%;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  font-weight: 300;
 
   .header-nav::v-deep {
     width: 100%;
     padding-left: 20px;
     position: relative;
     height: $headerHeight;
-    line-height:$headerHeight;
+    line-height: $headerHeight;
     font-size: 36px;
+
     .home-box {
       height: 100%;
       line-height: 80px;
       display: flex;
       align-items: center;
     }
+
     .current-time {
       margin-left: 20px;
       margin-top: 2px;
       font-size: 20px;
       font-weight: 300;
+
       .current-pm {
         font-size: 18px;
       }
     }
+
     .right {
       position: absolute;
       right: 20px;
       top: 50%;
       transform: translateY(-50%);
     }
+
     .right-ble {
       position: absolute;
       right: 80px;
@@ -724,31 +703,12 @@ $bottomHeight: 120px;
       height: 36px;
       background-size: 100% 100%;
     }
+
     .icon-home {
       background-image: url(/gym/dist/img/home.png);
     }
   }
-}
 
-.quick-fit {
-  display: flex;
-  height: calc(100vh - 80px);
-  width: 100%;
-  justify-content: center;
-  align-items: center;
-
-  .result-box {
-
-    // width: 100%;
-    // height: 100%;
-    .flex-box {
-      position: relative;
-      width: 100%;
-      height: 80px;
-      display: flex;
-      justify-content: center;
-    }
-  }
   .right-bottom {
     position: absolute;
     bottom: 20px;
@@ -765,6 +725,7 @@ $bottomHeight: 120px;
     justify-content: center;
     text-align: center;
     position: relative;
+
     &.disable {
       opacity: .6;
       pointer-events: none;
@@ -775,6 +736,7 @@ $bottomHeight: 120px;
       height: 100%;
       width: 280px;
     }
+
     .show-text {
       position: absolute;
       left: 50%;
@@ -782,22 +744,27 @@ $bottomHeight: 120px;
       top: 70px;
       font-size: 20px;
     }
+
     .show-num {
-      position:absolute;
+      position: absolute;
       left: 50%;
       transform: translate(-50%);
       top: 100px;
       font-size: 48px;
+
       .small {
         font-size: 20px;
       }
     }
+
     .slider-btn {
-      position:absolute;
+      position: absolute;
       left: 50%;
       transform: translate(-50%);
       bottom: 50px;
-      .plus,.reduce {
+
+      .plus,
+      .reduce {
         font-size: 56px;
         font-weight: bold;
         cursor: pointer;
@@ -815,6 +782,7 @@ $bottomHeight: 120px;
           opacity: .8;
         }
       }
+
       .plus {
         margin-left: 35px;
       }
@@ -888,13 +856,14 @@ $bottomHeight: 120px;
       flex-wrap: nowrap;
 
     }
+
     .tag-text {
       width: 50px;
       border: 1px solid #fff;
       border-radius: 35px;
       writing-mode: vertical-lr;
       text-align: center;
-      height: 200px;
+      height: 320px;
       font-size: 32px;
       display: flex;
       align-items: center;
@@ -921,6 +890,7 @@ $bottomHeight: 120px;
     .mode-box::v-deep {
       width: 100px;
       user-select: none;
+
       .quick-btn {
         // width: 100%;
         padding: 0 12px;
@@ -933,8 +903,9 @@ $bottomHeight: 120px;
         margin-bottom: 36px;
         user-select: none;
         cursor: pointer;
+
         &.active {
-           border: 1px solid $blue;
+          border: 1px solid $blue;
           background-color: $blue;
           color: #fff;
         }
@@ -964,6 +935,7 @@ $bottomHeight: 120px;
       width: 100%;
       font-size: 24px;
     }
+
     .big-text {
       // display: inline-block;
       // height: 44px;
@@ -988,6 +960,7 @@ $bottomHeight: 120px;
     width: 100%;
     height: $bottomHeight;
     text-align: center;
+
     .my-btn {
       font-size: 60px;
       display: inline-block;
@@ -996,9 +969,15 @@ $bottomHeight: 120px;
       line-height: 88px;
       border-radius: 44px;
       // padding: 20px;
-      background-color: #0d92f5;
+      background-color: $btnBlue;
+
+      &.disable {
+        opacity: .4;
+        pointer-events: none;
+      }
+
       &:last-child {
-         margin-left: 20px;
+        margin-left: 20px;
       }
 
       &.finish {
@@ -1006,6 +985,7 @@ $bottomHeight: 120px;
       }
     }
   }
+
   .start-btn {
 
     height: 80px;

@@ -3,11 +3,11 @@
     <PopForce v-model:showPop="showPop"
               :val="force"
               @change-force="setPopForce" />
-    <div class="pro-fit-03">
+    <div class="pro-fit-3">
       <div v-show="showResult"
            class="result-box-ui">
         <ResultTitle title="运动总结"
-                     sub-title="快速健身" />
+                     sub-title="专业健身" />
         <!-- 具体报告 -->
         <div class="flex-box">
           <ResultDataItem title="总做功"
@@ -27,13 +27,15 @@
         <div class="icon-back-ui right-bottom"
              @click="goBack" />
       </div>
+
       <div v-show="!showResult"
            class="page-content">
         <div class="half-box">
           <div class="half half-left">
             <div class="tag-text">
-              快速健身-弹力模式
+              专业健身-弹力模式
             </div>
+
             <div class="slider-box"
                  :class="{ 'disable': isPlaying }">
               <div id="content" />
@@ -56,22 +58,26 @@
           <!-- 右侧form表单 -->
           <div class="half half-right">
             <!-- echart 背景图 -->
-            <div>
+            <div class="data-item-box">
               <div class="data-item">
                 <div class="title-item">
                   运动次数
                 </div>
                 <div class="number-item">
-                  <span class="big-text">{{ playCount }} | {{ playCount2 }}</span>
+                  <span class="big-text"
+                        :class="{ 'small-text': overLength(playCount + ' ' + playCount2) }">
+                    {{ playCount }} | {{ playCount2 }}
+                  </span>
                 </div>
               </div>
               <div class="data-item">
                 <div class="title-item">
-                  总做功
+                  总做功<span style="font-size: 14px;">(J)</span>
                 </div>
                 <div class="number-item">
                   <!-- {{ totalW }} w ｜ {{ totalW2 }} w -->
-                  <span class="big-text">{{ totalW }}</span>J
+                  <span class="big-text"
+                        :class="{ 'small-text': overLength(totalW) }">{{ totalW }}</span>
                 </div>
               </div>
               <div class="data-item">
@@ -84,10 +90,12 @@
               </div>
               <div class="data-item">
                 <div class="title-item">
-                  能量消耗
+                  能量消耗<span style="font-size: 14px;">(Kcal)</span>
                 </div>
                 <div class="number-item">
-                  <span class="big-text">{{ totalCal }}</span> Kcal
+                  <span class="big-text"
+                        :class="{ 'small-text': overLength(totalCal) }">
+                    {{ totalCal }}</span>
                 </div>
               </div>
             </div>
@@ -151,7 +159,7 @@
 </template>
 
 <script lang="ts">
-import { formatTime2 } from '@/utils'
+import { formatTime2, myEvent } from '@/utils'
 
 import router from '@/router'
 import {
@@ -166,8 +174,8 @@ import {
 import { connectJoyo, bleState, send_fit_build_frame, continutePlay, pausePlay } from '@/api/joyo-ble/web-ble-server'
 
 import HeaderNav from '@/components/HeaderNav.vue'
-import ResultTitle from '@/components/ResultTitle.vue'
-import ResultDataItem from '@/components/ResultDataItem.vue'
+import ResultTitle from '@/components/UI/ResultTitle.vue'
+import ResultDataItem from '@/components/UI/ResultDataItem.vue'
 import Page from '@/components/UI/Page.vue'
 import PopForce from '@/components/UI/PopForce.vue'
 
@@ -176,13 +184,11 @@ import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 
 import { DragAcr } from '@/lib/circle'
-// import startClickTimer from '@/lib/sleep'
 
 export default defineComponent({
   name: 'ProFit',
   components: {
     Page,
-    // RollbackOutlined,
     ResultTitle,
     ResultDataItem,
     PopForce,
@@ -196,6 +202,7 @@ export default defineComponent({
     })
     // @ts-ignore
     const state = reactive({
+      // connectStatus: false,
       // value1: 1,
       force: 0,
       showPop: false,
@@ -210,7 +217,7 @@ export default defineComponent({
       isPlaying: false,
       isPause: false,
       playTime: 0,
-      totalCal: 922, // 卡路里
+      totalCal: 0, // 卡路里
       totalCalJiaoEr: 0, // 卡路里
       playCount: 0, // 运动次数
       playCount2: 0, // 运动次数
@@ -262,7 +269,7 @@ export default defineComponent({
     const forceShowVal = computed(() => { // 看下行否
       return state.force.toFixed(1)
     })
-    // const showResult = computed(() => { // 看下行否
+    // const showResult = computed(() => {
     //   return store.state.showResult
     // })
 
@@ -304,7 +311,7 @@ export default defineComponent({
     }
 
     function changeForce (step: number) {
-      state.force = Math.min(60, Math.max(0, state.force + step))
+      state.force = Math.min(60, Math.max(0, state.force + step)) // 0 - 60
 
       if (state.target) {
         state.target.value = Math.floor(state.force / 6 * 5 * 2) //
@@ -433,7 +440,6 @@ export default defineComponent({
       state.totalAverW = Math.round(state.totalCal * 4.18 / state.playTime) + 'w'
       state.totalFinalCal = state.totalCal + 'cal'
 
-      // store.commit('setShowResult', true)
       state.showResult = true
     }
 
@@ -441,6 +447,9 @@ export default defineComponent({
       state.playTime = state.playTime + 0.1
 
       // 运动次数
+      if (state.playCount !== info.pull_num || state.playCount2 !== info1.pull_num) {
+        document.dispatchEvent(myEvent)
+      }
       state.playCount = info.pull_num
       state.playCount2 = info1.pull_num
 
@@ -461,93 +470,18 @@ export default defineComponent({
       // state.totalCalJiaoEr = state.totalCal * 4.18
     }
 
-    let chart: any
-
-    const windowCnt = 40 // 一个波形绘图窗口数据点数
-    const charData = {
-      torque: new Array(windowCnt),
-      torque1: new Array(windowCnt), // 电机2
-      speed: new Array(windowCnt),
-      speed1: new Array(windowCnt),
-      rope_distance: new Array(windowCnt),
-      rope_distance1: new Array(windowCnt),
-    }
-
-    function updateLine (info0: any, info1: any) {
-      if (isNaN(info0.iq_return) || isNaN(info1.iq_return)) return
-      charData.torque.shift()
-      charData.torque1.shift()
-      charData.torque[windowCnt - 1] = info0.iq_return / 2
-      charData.torque1[windowCnt - 1] = info1.iq_return / 2
-
-      charData.speed.shift()
-      charData.speed1.shift()
-      charData.speed[windowCnt - 1] = info0.speed
-      charData.speed1[windowCnt - 1] = info1.speed
-
-      charData.rope_distance.shift()
-      charData.rope_distance1.shift()
-      charData.rope_distance[windowCnt - 1] = info0.distance
-      charData.rope_distance1[windowCnt - 1] = info1.distance
-
-      var option = {
-        animation: false,
-        series: [{
-          // name: 't',
-          name: 't',
-          type: 'line',
-          data: charData.torque,
-        }, {
-          name: 'v',
-          type: 'line',
-          data: charData.speed,
-        }, {
-          name: 'p',
-          type: 'line',
-          data: charData.rope_distance,
-        }, {
-          name: 't1',
-          type: 'line',
-          data: charData.torque1,
-        }, {
-          name: 'v1',
-          type: 'line',
-          data: charData.speed1,
-        }, {
-          name: 'p1',
-          type: 'line',
-          data: charData.rope_distance1,
-        }],
-      }
-
-      // var optionGauge = {
-      //   backgroundColor: "#ffffff",
-      //   series: [{
-      //     animation: false,
-      //     data: [{
-      //       // value: parseInt( (1+Math.sin(time)) * 50 ),
-      //       value: info0.iq_return,
-      //       name: '力量',
-      //     }]
-      //   }]
-      // };
-      if (chart) {
-        chart.setOption(option)
-      }
-
-      // chartGauge.setOption(optionGauge)
-    }
-
     function goBack () {
       state.showResult = false
       // store.commit('setShowResult', false)
     }
 
+    function overLength (data: number | string) {
+      return (data + '').length > 5
+    }
+
     let setTimer2 = null as any
 
     onMounted(() => {
-      // 监听60s点击屏幕
-
       const dom = document.getElementById('content')
       // const DragAcrInstance = (window as any).DragAcr
       const a = new DragAcr({
@@ -557,29 +491,12 @@ export default defineComponent({
         outColor: '#eee',
         counterclockwise: false,
         change: (v: any) => {
-          state.force = v / 5 * 3 // 0-60kg
+          state.force = v / 5 * 3 //  0 - 60kg
           setForce()
           console.log(`value:${v}`)
         },
       })
       state.target = a;
-      // const info0 = {
-      //   temp_mos,
-      //   err,
-      //   mode,
-      //   iq_return,
-      //   temp,
-      //   speed,
-      //   distance,
-      //   pull_num,
-      // }
-      // const info1 = {
-      //   iq_return,
-      //   temp,
-      //   speed,
-      //   distance,
-      //   pull_num,
-      // }
       (window as any).webBleNotify = (obj: { info0: any, info1: any }) => {
         // console.log('webBleNotify', obj.info0, obj.info1)
 
@@ -608,13 +525,13 @@ export default defineComponent({
     })
 
     onUnmounted(() => {
-      // cancelFunction && cancelFunction() // 执行注销函数
       state.target = null;
       (window as any).webBleNotify = null
     })
 
     return {
       ...toRefs(state),
+      overLength,
       goHome,
       // resetParams,
       connect,
@@ -648,7 +565,7 @@ export default defineComponent({
 
 $bottomHeight: 120px;
 
-.pro-fit-03 {
+.pro-fit-3 {
   background-color: #3d3d3d;
   display: flex;
   height: 100%;
@@ -656,6 +573,8 @@ $bottomHeight: 120px;
   justify-content: center;
   align-items: center;
   font-weight: 300;
+  font-size: 36px;
+  user-select: none;
 
   .header-nav::v-deep {
     width: 100%;
@@ -760,8 +679,15 @@ $bottomHeight: 120px;
     .slider-btn {
       position: absolute;
       left: 50%;
+      /* top: 0; */
       transform: translate(-50%);
-      bottom: 50px;
+      bottom: 73px;
+      height: 50px;
+      width: 130px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
       .plus,
       .reduce {
@@ -770,7 +696,7 @@ $bottomHeight: 120px;
         cursor: pointer;
         width: 80px;
         height: 80px;
-        padding: 0 10px;
+        // padding: 0 10px;
         line-height: 80px;
 
         border-radius: 2px;
@@ -792,8 +718,6 @@ $bottomHeight: 120px;
   .fit-slider {
     height: 65%;
     display: flex;
-
-    .slider {}
 
     .slider-data {
       width: 150px;
@@ -916,6 +840,16 @@ $bottomHeight: 120px;
 
   }
 
+  .data-item-box {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-around;
+    // flex-direction: column;
+    width: 340px;
+    height: 340px;
+  }
+
   .data-item {
     // width: 50%;
     width: 160px;
@@ -944,10 +878,16 @@ $bottomHeight: 120px;
       font-weight: 300;
     }
 
+    .small-text {
+      font-size: 24px;
+    }
+
     .number-item {
       // font-family: myFont-en;
       font-weight: 400;
       width: 100%;
+      height: 76px;
+      line-height: 76px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -968,7 +908,6 @@ $bottomHeight: 120px;
       height: 88px;
       line-height: 88px;
       border-radius: 44px;
-      // padding: 20px;
       background-color: $btnBlue;
 
       &.disable {

@@ -1,6 +1,9 @@
 
 <template>
   <Page>
+    <PopForce v-model:showPop="showPop"
+              :val="value"
+              @change-force="setPopForce" />
     <div class="intel-fit-1">
       <div v-show="showResult"
            class="result-box-ui">
@@ -24,9 +27,8 @@
                           :data="totalFinalCal" />
         </div>
         <!-- 返回按钮 -->
-        <div
-          class="icon-back-ui right-bottom"
-          @click="goBack" />
+        <div class="icon-back-ui right-bottom"
+             @click="goBack" />
       </div>
 
       <div v-if="!showResult"
@@ -35,19 +37,18 @@
         <div class="step-box">
           <div v-show="!isPlaying"
                class="progress">
-            <div
-              class="option-box">
+            <div class="option-box">
               <div>阻力调节</div>
               <div>
                 <span class="plus"
                       @click="changeValue(-0.5)">-</span>
-                {{ valueShowVal }} kg
+                <span style="margin: 0 10px;"
+                      @click="showPop = true">{{ valueShowVal }} kg</span>
                 <span class="plus"
                       @click="changeValue(0.5)">+</span>
               </div>
             </div>
-            <div
-              class="option-box">
+            <div class="option-box">
               <div>速度调节</div>
               <div>
                 <span class="plus"
@@ -136,6 +137,8 @@ import {
   PlayCircleOutlined, PauseCircleOutlined,
 } from '@ant-design/icons-vue'
 
+import { myEvent } from '@/utils'
+
 import router from '@/router'
 import {
   toRefs,
@@ -150,6 +153,7 @@ import { connectJoyo, throttle, send_fit_build_frame } from '@/api/joyo-ble/web-
 import ResultTitle from '@/components/UI/ResultTitle.vue'
 import ResultDataItem from '@/components/UI/ResultDataItem.vue'
 import Page from '@/components/UI/Page.vue'
+import PopForce from '@/components/UI/PopForce.vue'
 
 export default defineComponent({
   name: 'IntelFit',
@@ -157,6 +161,7 @@ export default defineComponent({
     Page,
     ResultTitle,
     ResultDataItem,
+    PopForce,
     // PlayCircleOutlined,
     // PauseCircleOutlined,
 
@@ -165,8 +170,9 @@ export default defineComponent({
   setup () {
     // @ts-ignore
     const state = reactive({
+      showPop: false,
       connectStatus: false,
-      value: 0,
+      value: 30,
       speed: 5, // [0-10]
 
       distance: 20, // 小球距离， distance
@@ -203,8 +209,18 @@ export default defineComponent({
       return state.speed.toFixed(1)
     })
 
+    function setPopForce (val: number) {
+      state.value = val
+
+      send_fit_build_frame({
+        mode: 'STD',
+        force: state.value,
+        back_force: state.value,
+      })
+    }
+
     function changeValue (step: number) { // 设置阻力调节
-      state.value = Math.max(0, Math.min(100, state.value + step))
+      state.value = Math.max(0, Math.min(60, state.value + step))
 
       send_fit_build_frame({
         mode: 'STD',
@@ -248,12 +264,14 @@ export default defineComponent({
       if (distance > state.distance) {
         state.addForce = true
         state.reduceForce = false
+        document.dispatchEvent(myEvent)
       } else if (distance === state.distance) {
         state.addForce = false
         state.reduceForce = false
       } else {
         state.addForce = false
         state.reduceForce = true
+        document.dispatchEvent(myEvent)
       }
       state.distance = distance
       console.log(distance)
@@ -464,6 +482,7 @@ export default defineComponent({
       stopGame,
       finishGame,
       goBack,
+      setPopForce,
     }
   },
 })

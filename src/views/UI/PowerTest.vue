@@ -1,28 +1,39 @@
 
 <template>
   <Page show-slot>
+    <PopForce v-model:showPop="showPop"
+              :val="setForce"
+              @change-force="setPopForce" />
     <div class="power-test-1">
       <div v-if="showResult"
-           class="result-box">
-        <ResultTitle />
+           class="result-box-ui power-result">
+        <ResultTitle title="运动总结"
+                     sub-title="力量测试" />
         <!-- 具体报告 -->
         <div class="flex-box">
           <ResultDataItem title="最大力量"
-                          :data="getMaxPower()" />
+                          :data="getMaxPower()"
+                          unit="kg" />
         </div>
         <div class="flex-box">
           <ResultDataItem title="测试次数"
-                          :data="testTimes + ''" />
+                          :data="testTimes - 1 + ''" />
           <ResultDataItem title="平均力量"
+                          unit="kg"
                           :data="getAvgPower()" />
           <ResultDataItem title="建议运动阻力"
+                          unit="kg"
                           :data="getSugPower()" />
         </div>
+        <!-- 返回按钮 -->
+        <div class="icon-back-ui right-bottom"
+             @click="goBack" />
       </div>
       <!-- 左边浮动记录信息 -->
       <div class="info-panel">
-        <div class="panel-title">
-          阻力（ kg ）
+        <div class="panel-title"
+             @click="showPop = true">
+          阻力: {{ setForce }} (kg)
         </div>
         <div class="panel-data">
           <!-- <div>{{ force }}</div> -->
@@ -150,6 +161,7 @@ import { connectJoyo, throttle, send_fit_build_frame, continutePlay } from '@/ap
 import ResultTitle from '@/components/UI/ResultTitle.vue'
 import ResultDataItem from '@/components/UI/ResultDataItem.vue'
 import Page from '@/components/UI/Page.vue'
+import PopForce from '@/components/UI/PopForce.vue'
 
 import { useStore } from 'vuex'
 
@@ -160,6 +172,7 @@ export default defineComponent({
     // PlayCircleOutlined,
     ResultTitle,
     ResultDataItem,
+    PopForce,
     // SwapRightOutlined,
   },
 
@@ -172,6 +185,9 @@ export default defineComponent({
       testTimes: 0, // 1-3
       showOverlay: false,
       forceResult: [0, 0, 0],
+
+      setForce: 5,
+      showPop: false,
 
       force: 0.0,
       maxForce: 0,
@@ -249,7 +265,10 @@ export default defineComponent({
 
     // 处理力度变化
     const handleForceChange = (force: number) => {
-      state.force = force
+      if (force) {
+        state.force = force
+      }
+
       console.log(force, '力度')
       if (!state.isTesting) return
 
@@ -276,13 +295,17 @@ export default defineComponent({
       connectJoyo()
     }
 
+    function setPopForce (val: number) {
+      state.setForce = val
+    }
+
     function initForce () {
       continutePlay()
       setTimeout(() => {
         send_fit_build_frame({
           mode: 'FLU',
-          force: 5,
-          back_force: 5,
+          force: state.setForce,
+          back_force: state.setForce,
           fluid_resis_param: 100,
         })
       }, 500)
@@ -325,6 +348,16 @@ export default defineComponent({
       return val + 'px'
     }
 
+    function goBack () {
+      state.showResult = false
+      state.testTimes = 0
+      state.forceResult = [0, 0, 0]
+      state.force = 0.0
+      state.maxForce = 0
+      state.hasPull = false
+      state.isTesting = false
+    }
+
     onMounted(() => {
       initForce()
 
@@ -353,7 +386,9 @@ export default defineComponent({
       getMaxPower,
       getAvgPower,
       getSugPower,
+      setPopForce,
       forceShowVal,
+      goBack,
     }
   },
 })
@@ -369,15 +404,20 @@ export default defineComponent({
   justify-content: center;
   align-items: center;
   font-weight: 300;
-
-  .result-box {
-    .flex-box {
-      position: relative;
-      width: 100%;
-      height: 80px;
-      display: flex;
-      justify-content: center;
-    }
+  .power-result {
+    width: 100%;
+    height: calc(100% - 80px);
+    position: absolute;
+    top: 80px;
+    left: 0;
+    z-index: 1;
+    overflow: hidden;
+    background: #3d3d3d;
+  }
+  .right-bottom {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
   }
 
   .info-panel-right {
@@ -406,6 +446,7 @@ export default defineComponent({
     .panel-title {
       background-color: #000;
       padding: 15px 10px;
+      cursor: pointer;
     }
     .panel-data {
       margin-top: 10px;

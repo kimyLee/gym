@@ -28,3 +28,5 @@ export function formatTime2 (seconds: number) {
   // 返回 hh:mm:ss 格式的时间显示
   return formattedMinutes + ':' + formattedSeconds
 }
+
+export const myEvent: any = new Event('playing')

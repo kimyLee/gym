@@ -43,6 +43,7 @@ import {
 } from 'vue'
 
 import { useRoute, useRouter } from 'vue-router'
+// import { myEvent } from 'vue-router'
 
 // import startClickTimer from '@/lib/sleep'
 
@@ -118,10 +119,12 @@ export default defineComponent({
     function addClickTimer () { // 开始计时
       // 监听点击事件
       document.addEventListener('click', handleClick)
+      document.addEventListener('playing', handleClick)
     }
     function removeClickTimer () { // 开始计时
       // 监听点击事件
       document.removeEventListener('click', handleClick)
+      document.removeEventListener('playing', handleClick)
       clearTimeout(state.sleepTimer)
     }
 

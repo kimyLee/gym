@@ -160,22 +160,7 @@
 </template>
 
 <script lang="ts">
-import { formatTime2 } from '@/utils'
-
-import {
-  HistoryOutlined, FireOutlined, SyncOutlined, BulbOutlined,
-  PlayCircleOutlined, PauseCircleOutlined, SettingOutlined,
-  RollbackOutlined,
-  HomeOutlined,
-  LinkOutlined,
-  DisconnectOutlined,
-} from '@ant-design/icons-vue'
-
-import {
-  ClientResponse,
-  ClientResponseWithData,
-  BleList,
-} from '@/api/common-type'
+import { formatTime2, myEvent } from '@/utils'
 
 import router from '@/router'
 import {
@@ -463,6 +448,9 @@ export default defineComponent({
       state.playTime = state.playTime + 0.1
 
       // 运动次数
+      if (state.playCount !== info.pull_num || state.playCount2 !== info1.pull_num) {
+        document.dispatchEvent(myEvent)
+      }
       state.playCount = info.pull_num
       state.playCount2 = info1.pull_num
 
@@ -504,7 +492,7 @@ export default defineComponent({
         outColor: '#eee',
         counterclockwise: false,
         change: (v: any) => {
-          state.force = v / 5 * 3 //  0 - 60kg
+          state.force = Number((v / 5 * 3).toFixed(1)) //  0 - 60kg
           setForce()
           console.log(`value:${v}`)
         },
@@ -523,8 +511,8 @@ export default defineComponent({
 
         // updateLine(obj.info0, obj.info1)
         if (!state.hasFirstInit) {
-          state.force = obj.info0.iq_return / 2 // 拉力
-          state.back_force = obj.info1.iq_return / 2 // 回力
+          state.force = Number((obj.info0.iq_return / 2).toFixed(1)) // 拉力
+          state.back_force = Number((obj.info1.iq_return / 2).toFixed(1)) // 回力
 
           state.hasFirstInit = true
         }

@@ -59,17 +59,17 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import(/* webpackChunkName: "art" */ '@/views/UI/ProMenu.vue'),
   },
   {
-    path: '/pro-fit-01',
+    path: '/pro-fit-1',
     name: 'ProFit01',
     component: () => import(/* webpackChunkName: "art" */ '@/views/UI/ProFit01.vue'),
   },
   {
-    path: '/pro-fit-02',
+    path: '/pro-fit-2',
     name: 'ProFit02',
     component: () => import(/* webpackChunkName: "art" */ '@/views/UI/ProFit02.vue'),
   },
   {
-    path: '/pro-fit-03',
+    path: '/pro-fit-3',
     name: 'ProFit03',
     component: () => import(/* webpackChunkName: "art" */ '@/views/UI/ProFit03.vue'),
   },

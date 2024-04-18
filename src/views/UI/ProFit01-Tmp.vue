@@ -1,9 +1,10 @@
+
 <template>
   <Page show-slot>
     <PopForce v-model:showPop="showPop"
               :val="force"
               @change-force="setPopForce" />
-    <div class="pro-fit-1">
+    <div class="pro-fit-01">
       <div v-show="showResult"
            class="result-box-ui">
         <ResultTitle title="运动总结"
@@ -27,15 +28,13 @@
         <div class="icon-back-ui right-bottom"
              @click="goBack" />
       </div>
-
       <div v-show="!showResult"
            class="page-content">
         <div class="half-box">
           <div class="half half-left">
             <div class="tag-text">
-              专业健身-离心模式
+              快速健身-离心模式
             </div>
-
             <div class="slider-box"
                  :class="{ 'disable': isPlaying }">
               <div id="content" />
@@ -44,7 +43,7 @@
                 阻力调节
               </div>
               <div class="show-num"
-                   @click="showPop = true">
+                   @click="showPop= true">
                 {{ forceShowVal }}<span class="small">kg</span>
               </div>
               <div class="slider-btn">
@@ -58,26 +57,22 @@
           <!-- 右侧form表单 -->
           <div class="half half-right">
             <!-- echart 背景图 -->
-            <div class="data-item-box">
+            <div>
               <div class="data-item">
                 <div class="title-item">
                   运动次数
                 </div>
                 <div class="number-item">
-                  <span class="big-text"
-                        :class="{ 'small-text': overLength(playCount + ' ' + playCount2) }">
-                    {{ playCount }} | {{ playCount2 }}
-                  </span>
+                  <span class="big-text">{{ playCount }} | {{ playCount2 }}</span>
                 </div>
               </div>
               <div class="data-item">
                 <div class="title-item">
-                  总做功<span style="font-size: 14px;">(J)</span>
+                  总做功
                 </div>
                 <div class="number-item">
                   <!-- {{ totalW }} w ｜ {{ totalW2 }} w -->
-                  <span class="big-text"
-                        :class="{ 'small-text': overLength(totalW) }">{{ totalW }}</span>
+                  <span class="big-text">{{ totalW }}</span>J
                 </div>
               </div>
               <div class="data-item">
@@ -90,12 +85,10 @@
               </div>
               <div class="data-item">
                 <div class="title-item">
-                  能量消耗<span style="font-size: 14px;">(Kcal)</span>
+                  能量消耗
                 </div>
                 <div class="number-item">
-                  <span class="big-text"
-                        :class="{ 'small-text': overLength(totalCal) }">
-                    {{ totalCal }}</span>
+                  <span class="big-text">{{ totalCal }}</span> Kcal
                 </div>
               </div>
             </div>
@@ -105,7 +98,7 @@
         <div class="start-btn-box">
           <div v-show="!isPlaying"
                class="start my-btn"
-               :class="{ 'disable': !connectStatus }"
+               :class="{'disable': !connectStatus}"
                @click="readyStart">
             开始
           </div>
@@ -159,7 +152,7 @@
 </template>
 
 <script lang="ts">
-import { formatTime2, myEvent } from '@/utils'
+import { formatTime2 } from '@/utils'
 
 import router from '@/router'
 import {
@@ -174,8 +167,8 @@ import {
 import { connectJoyo, bleState, send_fit_build_frame, continutePlay, pausePlay } from '@/api/joyo-ble/web-ble-server'
 
 import HeaderNav from '@/components/HeaderNav.vue'
-import ResultTitle from '@/components/UI/ResultTitle.vue'
-import ResultDataItem from '@/components/UI/ResultDataItem.vue'
+import ResultTitle from '@/components/ResultTitle.vue'
+import ResultDataItem from '@/components/ResultDataItem.vue'
 import Page from '@/components/UI/Page.vue'
 import PopForce from '@/components/UI/PopForce.vue'
 
@@ -184,11 +177,13 @@ import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 
 import { DragAcr } from '@/lib/circle'
+// import startClickTimer from '@/lib/sleep'
 
 export default defineComponent({
   name: 'ProFit',
   components: {
     Page,
+    // RollbackOutlined,
     ResultTitle,
     ResultDataItem,
     PopForce,
@@ -202,7 +197,6 @@ export default defineComponent({
     })
     // @ts-ignore
     const state = reactive({
-      // connectStatus: false,
       // value1: 1,
       force: 0,
       showPop: false,
@@ -217,7 +211,7 @@ export default defineComponent({
       isPlaying: false,
       isPause: false,
       playTime: 0,
-      totalCal: 0, // 卡路里
+      totalCal: 922, // 卡路里
       totalCalJiaoEr: 0, // 卡路里
       playCount: 0, // 运动次数
       playCount2: 0, // 运动次数
@@ -269,7 +263,7 @@ export default defineComponent({
     const forceShowVal = computed(() => { // 看下行否
       return state.force.toFixed(1)
     })
-    // const showResult = computed(() => {
+    // const showResult = computed(() => { // 看下行否
     //   return store.state.showResult
     // })
 
@@ -311,7 +305,7 @@ export default defineComponent({
     }
 
     function changeForce (step: number) {
-      state.force = Math.min(60, Math.max(0, state.force + step)) // 0 - 60
+      state.force = Math.min(60, Math.max(0, state.force + step))
 
       if (state.target) {
         state.target.value = Math.floor(state.force / 6 * 5 * 2) //
@@ -440,6 +434,7 @@ export default defineComponent({
       state.totalAverW = Math.round(state.totalCal * 4.18 / state.playTime) + 'w'
       state.totalFinalCal = state.totalCal + 'cal'
 
+      // store.commit('setShowResult', true)
       state.showResult = true
     }
 
@@ -447,9 +442,6 @@ export default defineComponent({
       state.playTime = state.playTime + 0.1
 
       // 运动次数
-      if (state.playCount !== info.pull_num || state.playCount2 !== info1.pull_num) {
-        document.dispatchEvent(myEvent)
-      }
       state.playCount = info.pull_num
       state.playCount2 = info1.pull_num
 
@@ -470,18 +462,28 @@ export default defineComponent({
       // state.totalCalJiaoEr = state.totalCal * 4.18
     }
 
+    let chart: any
+
+    const windowCnt = 40 // 一个波形绘图窗口数据点数
+    const charData = {
+      torque: new Array(windowCnt),
+      torque1: new Array(windowCnt), // 电机2
+      speed: new Array(windowCnt),
+      speed1: new Array(windowCnt),
+      rope_distance: new Array(windowCnt),
+      rope_distance1: new Array(windowCnt),
+    }
+
     function goBack () {
       state.showResult = false
       // store.commit('setShowResult', false)
     }
 
-    function overLength (data: number | string) {
-      return (data + '').length > 5
-    }
-
     let setTimer2 = null as any
 
     onMounted(() => {
+      // 监听60s点击屏幕
+
       const dom = document.getElementById('content')
       // const DragAcrInstance = (window as any).DragAcr
       const a = new DragAcr({
@@ -491,7 +493,7 @@ export default defineComponent({
         outColor: '#eee',
         counterclockwise: false,
         change: (v: any) => {
-          state.force = v / 5 * 3 //  0 - 60kg
+          state.force = v / 5 * 3 // 0-60kg
           setForce()
           console.log(`value:${v}`)
         },
@@ -525,13 +527,13 @@ export default defineComponent({
     })
 
     onUnmounted(() => {
+      // cancelFunction && cancelFunction() // 执行注销函数
       state.target = null;
       (window as any).webBleNotify = null
     })
 
     return {
       ...toRefs(state),
-      overLength,
       goHome,
       // resetParams,
       connect,
@@ -564,8 +566,7 @@ export default defineComponent({
 @import "~@/style/var.scss";
 
 $bottomHeight: 120px;
-
-.pro-fit-1 {
+.pro-fit-01 {
   background-color: #3d3d3d;
   display: flex;
   height: 100%;
@@ -573,42 +574,35 @@ $bottomHeight: 120px;
   justify-content: center;
   align-items: center;
   font-weight: 300;
-  font-size: 36px;
-  user-select: none;
 
   .header-nav::v-deep {
     width: 100%;
     padding-left: 20px;
     position: relative;
     height: $headerHeight;
-    line-height: $headerHeight;
+    line-height:$headerHeight;
     font-size: 36px;
-
     .home-box {
       height: 100%;
       line-height: 80px;
       display: flex;
       align-items: center;
     }
-
     .current-time {
       margin-left: 20px;
       margin-top: 2px;
       font-size: 20px;
       font-weight: 300;
-
       .current-pm {
         font-size: 18px;
       }
     }
-
     .right {
       position: absolute;
       right: 20px;
       top: 50%;
       transform: translateY(-50%);
     }
-
     .right-ble {
       position: absolute;
       right: 80px;
@@ -622,7 +616,6 @@ $bottomHeight: 120px;
       height: 36px;
       background-size: 100% 100%;
     }
-
     .icon-home {
       background-image: url(/gym/dist/img/home.png);
     }
@@ -644,7 +637,6 @@ $bottomHeight: 120px;
     justify-content: center;
     text-align: center;
     position: relative;
-
     &.disable {
       opacity: .6;
       pointer-events: none;
@@ -655,7 +647,6 @@ $bottomHeight: 120px;
       height: 100%;
       width: 280px;
     }
-
     .show-text {
       position: absolute;
       left: 50%;
@@ -663,40 +654,28 @@ $bottomHeight: 120px;
       top: 70px;
       font-size: 20px;
     }
-
     .show-num {
-      position: absolute;
+      position:absolute;
       left: 50%;
       transform: translate(-50%);
       top: 100px;
       font-size: 48px;
-
       .small {
         font-size: 20px;
       }
     }
-
     .slider-btn {
-      position: absolute;
+      position:absolute;
       left: 50%;
-      /* top: 0; */
       transform: translate(-50%);
-      bottom: 73px;
-      height: 50px;
-      width: 130px;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-
-      .plus,
-      .reduce {
+      bottom: 50px;
+      .plus,.reduce {
         font-size: 56px;
         font-weight: bold;
         cursor: pointer;
         width: 80px;
         height: 80px;
-        // padding: 0 10px;
+        padding: 0 10px;
         line-height: 80px;
 
         border-radius: 2px;
@@ -708,16 +687,16 @@ $bottomHeight: 120px;
           opacity: .8;
         }
       }
-
       .plus {
         margin-left: 35px;
       }
     }
-  }
+}
 
   .fit-slider {
     height: 65%;
     display: flex;
+    .slider {}
 
     .slider-data {
       width: 150px;
@@ -780,7 +759,6 @@ $bottomHeight: 120px;
       flex-wrap: nowrap;
 
     }
-
     .tag-text {
       width: 50px;
       border: 1px solid #fff;
@@ -814,7 +792,6 @@ $bottomHeight: 120px;
     .mode-box::v-deep {
       width: 100px;
       user-select: none;
-
       .quick-btn {
         // width: 100%;
         padding: 0 12px;
@@ -827,9 +804,8 @@ $bottomHeight: 120px;
         margin-bottom: 36px;
         user-select: none;
         cursor: pointer;
-
         &.active {
-          border: 1px solid $blue;
+           border: 1px solid $blue;
           background-color: $blue;
           color: #fff;
         }
@@ -838,16 +814,6 @@ $bottomHeight: 120px;
 
     }
 
-  }
-
-  .data-item-box {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-around;
-    // flex-direction: column;
-    width: 340px;
-    height: 340px;
   }
 
   .data-item {
@@ -869,7 +835,6 @@ $bottomHeight: 120px;
       width: 100%;
       font-size: 24px;
     }
-
     .big-text {
       // display: inline-block;
       // height: 44px;
@@ -878,16 +843,10 @@ $bottomHeight: 120px;
       font-weight: 300;
     }
 
-    .small-text {
-      font-size: 24px;
-    }
-
     .number-item {
       // font-family: myFont-en;
       font-weight: 400;
       width: 100%;
-      height: 76px;
-      line-height: 76px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -900,7 +859,6 @@ $bottomHeight: 120px;
     width: 100%;
     height: $bottomHeight;
     text-align: center;
-
     .my-btn {
       font-size: 60px;
       display: inline-block;
@@ -908,15 +866,14 @@ $bottomHeight: 120px;
       height: 88px;
       line-height: 88px;
       border-radius: 44px;
+      // padding: 20px;
       background-color: $btnBlue;
-
       &.disable {
         opacity: .4;
         pointer-events: none;
       }
-
       &:last-child {
-        margin-left: 20px;
+         margin-left: 20px;
       }
 
       &.finish {
@@ -924,7 +881,6 @@ $bottomHeight: 120px;
       }
     }
   }
-
   .start-btn {
 
     height: 80px;

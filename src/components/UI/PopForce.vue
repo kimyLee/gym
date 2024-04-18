@@ -78,7 +78,7 @@ export default defineComponent({
   setup (props, { emit }) {
     // @ts-ignore
     const state = reactive({
-      force: 0,
+      force: props.val,
       // showPop: true,
       timer: null as any,
       sleepTimer: null as any,
@@ -147,6 +147,7 @@ export default defineComponent({
   transform: translate(-50%, -50%);
   border-radius: 25px;
   background-color: rgba(0, 0, 0, .8);
+  user-select: none;
   &.notShow {
     left: -100%;
   }

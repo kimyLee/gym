@@ -6,7 +6,7 @@
       </div>
     </div>
     <div class="number-item">
-      {{ data }}
+      {{ data }}{{ unit ? ' ' + unit : '' }}
     </div>
   </div>
 </template>
@@ -26,6 +26,10 @@ export default defineComponent({
       default: '',
     },
     data: {
+      type: String,
+      default: '',
+    },
+    unit: {
       type: String,
       default: '',
     },

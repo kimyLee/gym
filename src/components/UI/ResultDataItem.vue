@@ -5,7 +5,8 @@
         <span class="dot" /><span class="text">{{ title }}</span>
       </div>
     </div>
-    <div class="number-item">
+    <div class="number-item"
+         :class="{'small-text': data.length > 12}">
       {{ data }}{{ unit ? ' ' + unit : '' }}
     </div>
   </div>
@@ -70,6 +71,9 @@ export default defineComponent({
   .number-item {
       width: 100%;
       // text-align: center;
+      &.small-text {
+        font-size: 24px;
+      }
   }
 }
 

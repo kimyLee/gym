@@ -5,33 +5,33 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'Home',
-    component: () => import(/* webpackChunkName: "art" */ '@/views/Home.vue'),
+    component: () => import(/* webpackChunkName: "art" */ '@/views/UI/StartPage.vue'),
   },
-  {
-    path: '/menu',
-    name: 'Menu',
-    component: () => import(/* webpackChunkName: "art" */ '@/views/Menu.vue'),
-  },
-  {
-    path: '/quick-fit',
-    name: 'QuickFit',
-    component: () => import(/* webpackChunkName: "art" */ '@/views/QuickFit.vue'),
-  },
-  {
-    path: '/pro-fit',
-    name: 'ProFit',
-    component: () => import(/* webpackChunkName: "art" */ '@/views/ProFit.vue'),
-  },
-  {
-    path: '/intel-fit',
-    name: 'IntelFit',
-    component: () => import(/* webpackChunkName: "art" */ '@/views/IntelFit.vue'),
-  },
-  {
-    path: '/power-test',
-    name: 'PowerTest',
-    component: () => import(/* webpackChunkName: "art" */ '@/views/PowerTest.vue'),
-  },
+  // {
+  //   path: '/menu',
+  //   name: 'Menu',
+  //   component: () => import(/* webpackChunkName: "art" */ '@/views/Menu.vue'),
+  // },
+  // {
+  //   path: '/quick-fit',
+  //   name: 'QuickFit',
+  //   component: () => import(/* webpackChunkName: "art" */ '@/views/QuickFit.vue'),
+  // },
+  // {
+  //   path: '/pro-fit',
+  //   name: 'ProFit',
+  //   component: () => import(/* webpackChunkName: "art" */ '@/views/ProFit.vue'),
+  // },
+  // {
+  //   path: '/intel-fit',
+  //   name: 'IntelFit',
+  //   component: () => import(/* webpackChunkName: "art" */ '@/views/IntelFit.vue'),
+  // },
+  // {
+  //   path: '/power-test',
+  //   name: 'PowerTest',
+  //   component: () => import(/* webpackChunkName: "art" */ '@/views/PowerTest.vue'),
+  // },
   // 新美术UI
   {
     path: '/start',

@@ -1,42 +1,60 @@
 <template>
   <Page show-slot>
-    <PopForce v-model:showPop="showPop" :val="force" @change-force="setPopForce" />
+    <PopForce v-model:showPop="showPop"
+              :val="force"
+              @change-force="setPopForce" />
     <div class="pro-fit-2">
-      <div v-show="showResult" class="result-box-ui">
-        <ResultTitle title="运动总结" sub-title="快速健身" />
+      <div v-show="showResult"
+           class="result-box-ui">
+        <ResultTitle title="运动总结"
+                     sub-title="快速健身" />
         <!-- 具体报告 -->
         <div class="flex-box">
-          <ResultDataItem title="总做功" :data="totalWork" />
-          <ResultDataItem title="运动总时长" :data="totalTime" />
+          <ResultDataItem title="总做功"
+                          :data="totalWork" />
+          <ResultDataItem title="运动总时长"
+                          :data="totalTime" />
         </div>
         <div class="flex-box">
-          <ResultDataItem title="运动次数" :data="totalPlayTime" />
-          <ResultDataItem title="平均功率" :data="totalAverW" />
-          <ResultDataItem title="热量消耗" :data="totalFinalCal" />
+          <ResultDataItem title="运动次数"
+                          :data="totalPlayTime" />
+          <ResultDataItem title="平均功率"
+                          :data="totalAverW" />
+          <ResultDataItem title="热量消耗"
+                          :data="totalFinalCal" />
         </div>
         <!-- 返回按钮 -->
-        <div class="icon-back-ui right-bottom" @click="goBack" />
+        <div class="icon-back-ui right-bottom"
+             @click="goBack" />
       </div>
 
-      <div v-show="!showResult" class="page-content">
+      <div v-show="!showResult"
+           class="page-content">
+        <!-- 返回按钮 -->
+        <div class="icon-back-ui right-bottom"
+             @click="goMenu" />
         <div class="half-box">
           <div class="half half-left">
             <div class="tag-text">
               专业健身-等速模式
             </div>
 
-            <div class="slider-box" :class="{ 'disable': isPlaying }">
+            <div class="slider-box"
+                 :class="{ 'disable': isPlaying }">
               <div id="content" />
 
               <div class="show-text">
                 阻力调节
               </div>
-              <div class="show-num" @click="showPop = true">
+              <div class="show-num"
+                   @click="showPop = true">
                 {{ forceShowVal }}<span class="small">kg</span>
               </div>
               <div class="slider-btn">
-                <span class="reduce" @click="changeForce(-0.5)">-</span>
-                <span class="plus" @click="changeForce(0.5)">+</span>
+                <span class="reduce"
+                      @click="changeForce(-0.5)">-</span>
+                <span class="plus"
+                      @click="changeForce(0.5)">+</span>
               </div>
             </div>
           </div>
@@ -49,7 +67,8 @@
                   运动次数
                 </div>
                 <div class="number-item">
-                  <span class="big-text" :class="{ 'small-text': overLength(playCount + ' ' + playCount2) }">
+                  <span class="big-text"
+                        :class="{ 'small-text': overLength(playCount + ' ' + playCount2) }">
                     {{ playCount }} | {{ playCount2 }}
                   </span>
                 </div>
@@ -60,7 +79,8 @@
                 </div>
                 <div class="number-item">
                   <!-- {{ totalW }} w ｜ {{ totalW2 }} w -->
-                  <span class="big-text" :class="{ 'small-text': overLength(totalW) }">{{ totalW }}</span>
+                  <span class="big-text"
+                        :class="{ 'small-text': overLength(totalW) }">{{ totalW }}</span>
                 </div>
               </div>
               <div class="data-item">
@@ -76,7 +96,8 @@
                   能量消耗<span style="font-size: 14px;">(Kcal)</span>
                 </div>
                 <div class="number-item">
-                  <span class="big-text" :class="{ 'small-text': overLength(totalCal) }">
+                  <span class="big-text"
+                        :class="{ 'small-text': overLength(totalCal) }">
                     {{ totalCal }}</span>
                 </div>
               </div>
@@ -85,10 +106,15 @@
         </div>
         <!-- 开始按钮 -->
         <div class="start-btn-box">
-          <div v-show="!isPlaying" class="start my-btn" :class="{ 'disable': !connectStatus }" @click="readyStart">
+          <div v-show="!isPlaying"
+               class="start my-btn"
+               :class="{ 'disable': !connectStatus }"
+               @click="readyStart">
             开始
           </div>
-          <div v-show="isPlaying" class="pause my-btn" @click="pause">
+          <div v-show="isPlaying"
+               class="pause my-btn"
+               @click="pause">
             暂停
           </div>
           <!-- <div v-show="!isPlaying"
@@ -96,7 +122,9 @@
                @click="startPlay">
             继续
           </div> -->
-          <div v-show="isPlaying" class="finish  my-btn" @click="finishGame">
+          <div v-show="isPlaying"
+               class="finish  my-btn"
+               @click="finishGame">
             结束
           </div>
         </div>
@@ -104,23 +132,28 @@
         <!-- End 右侧form表单 -->
       </div>
       <!-- 加载动画特效 -->
-      <div v-show="showOverlay" class="over-layer">
+      <div v-show="showOverlay"
+           class="over-layer">
         <Transition name="scale">
-          <div v-show="readyStartTime === 3" class="over-num">
+          <div v-show="readyStartTime === 3"
+               class="over-num">
             <div>3</div>
           </div>
         </Transition>
         <Transition name="scale">
-          <div v-show="readyStartTime === 2" class="over-num">
+          <div v-show="readyStartTime === 2"
+               class="over-num">
             <div>2</div>
           </div>
         </Transition>
         <Transition name="scale">
-          <div v-show="readyStartTime === 1" class="over-num">
+          <div v-show="readyStartTime === 1"
+               class="over-num">
             <div>1</div>
           </div>
         </Transition>
-        <div v-show="readyStartTime === 0" class="progress-bar">
+        <div v-show="readyStartTime === 0"
+             class="progress-bar">
           开始训练
         </div>
       </div>
@@ -181,7 +214,7 @@ export default defineComponent({
       spring_rate: 50,
       back_force: 0,
 
-      selectMode: 'STD',
+      selectMode: 'FLU', // 等速
       showResult: false,
       hasFirstInit: false, // 是否已经获取初始值力度
       isPlaying: false,
@@ -444,6 +477,9 @@ export default defineComponent({
       state.showResult = false
       // store.commit('setShowResult', false)
     }
+    function goMenu () {
+      router.push({ name: 'ProFitMenu' })
+    }
 
     function overLength (data: number | string) {
       return (data + '').length > 5
@@ -524,6 +560,7 @@ export default defineComponent({
       // showResult,
       handleSelectMode,
       goBack,
+      goMenu,
       connectStatus,
     }
   },

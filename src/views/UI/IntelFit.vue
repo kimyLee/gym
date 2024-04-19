@@ -11,20 +11,20 @@
                      sub-title="智能健身" />
         <!-- 具体报告 -->
         <div class="flex-box">
-          <ResultDataItem title="运动时长"
-                          :data="totalWork" />
-          <ResultDataItem title="运动次数"
-                          :data="totalTime" />
-          <ResultDataItem title="总重量"
-                          :data="totalTime" />
+          <ResultDataItem title="目标达成率"
+                          :data="getScore()" />
+          <ResultDataItem title="热量消耗"
+                          :data="totalCal + ' cal'" />
+          <!-- <ResultDataItem title="总重量"
+                          :data="totalTime" /> -->
         </div>
         <div class="flex-box">
-          <ResultDataItem title="总做工"
-                          :data="totalPlayTime" />
-          <ResultDataItem title="平均功率"
-                          :data="totalAverW" />
-          <ResultDataItem title="热量消耗"
-                          :data="totalFinalCal" />
+          <ResultDataItem title="训练阻力"
+                          :data="currentKG + 'kg /' + value * 40 + ' kg'" />
+          <ResultDataItem title="训练组数"
+                          :data="currentCount + '/' + totalCount" />
+          <ResultDataItem title="训练次数"
+                          :data="score + '/' + totalTarget" />
         </div>
         <!-- 返回按钮 -->
         <div class="icon-back-ui right-bottom"
@@ -58,9 +58,9 @@
                       @click="changeSpeed(1)">+</span>
               </div>
             </div>
-            <div class="show-score">
+            <!-- <div class="show-score">
               {{ score }}
-            </div>
+            </div> -->
           </div>
           <div v-show="isPlaying"
                class="progress">
@@ -74,12 +74,12 @@
             </div>
 
             <div class="flex-box">
-              <ResultDataItem title="训练时长"
-                              :data="totalWork" />
-              <ResultDataItem title="得分"
-                              :data="score" />
-              <ResultDataItem title="热量消耗"
-                              :data="totalTime" />
+              <ResultDataItem title="训练阻力"
+                              :data="currentKGShow" />
+              <ResultDataItem title="训练组数"
+                              :data="currentCount + '/' + totalCount" />
+              <ResultDataItem title="训练次数"
+                              :data="score + '/' + totalTarget" />
             </div>
           </div>
 
@@ -184,9 +184,15 @@ export default defineComponent({
 
       isPlaying: false,
       hasStart: false,
+      // 显示数据
+      totalCount: 4, // 总组数4
+      // currentCount: 1,
+      totalTarget: 40, // 总组数4
       score: 0,
+      currentKG: 0, // 累计训练负重
 
       // 汇总数据
+      totalCal: 0,
       totalWork: '0J',
       totalTime: '00:00:00',
       totalPlayTime: '0 | 0',
@@ -208,6 +214,16 @@ export default defineComponent({
     const speedShowVal = computed(() => { // 看下行否
       return state.speed.toFixed(1)
     })
+    const currentCount = computed(() => { // 看下行否
+      return Math.floor(state.score / state.totalTarget) + 1
+    })
+    const currentKGShow = computed(() => { // 看下行否
+      return state.currentKG + 'kg/' + state.value * 40 + 'kg'
+    })
+
+    function getScore () {
+      return (state.score / state.totalTarget * 100).toFixed(1) + '%'
+    }
 
     function setPopForce (val: number) {
       state.value = val
@@ -337,6 +353,8 @@ export default defineComponent({
       setTimeout(() => {
         state.showScore = false
       }, 50)
+      // 同时负重更新
+      state.currentKG = state.currentKG + state.value
     }
 
     function getFactor () {
@@ -435,6 +453,12 @@ export default defineComponent({
 
         const distance = Math.min(50, Math.abs(obj.info0.distance))
 
+        const totalW = Math.abs(Math.round((obj.info0.iq_return * 0.05 * obj.info0.speed)))
+        // 卡路里, 这里取两个电机总和，sum( P * 0.1 ) * 4.18
+        const cal1 = Number((totalW * 0.418).toFixed(2)) - 0
+        // todo: 如果误差太大，再用小数点
+        state.totalCal = Math.round(Number(cal1 + (state.totalCal || 0)))
+
         throttledHandleForceChange(distance)
       }
       // mockAnimation()
@@ -476,6 +500,8 @@ export default defineComponent({
       changeSpeed,
       valueShowVal,
       speedShowVal,
+      currentCount,
+      currentKGShow,
       computedLeft,
       computedTop,
       startGame,
@@ -483,6 +509,7 @@ export default defineComponent({
       finishGame,
       goBack,
       setPopForce,
+      getScore,
     }
   },
 })

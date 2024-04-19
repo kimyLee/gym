@@ -62,6 +62,14 @@
   }
 }
 
+.icon-back-ui {
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  background-size: 100% 100%;
+  background-image: url(/gym/dist/img/back.png);
+}
+
 @keyframes scrollBackground {
   from {
     background-position: 0 0;

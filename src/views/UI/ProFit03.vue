@@ -30,6 +30,9 @@
 
       <div v-show="!showResult"
            class="page-content">
+        <!-- 返回按钮 -->
+        <div class="icon-back-ui right-bottom"
+             @click="goMenu" />
         <div class="half-box">
           <div class="half half-left">
             <div class="tag-text">
@@ -211,7 +214,7 @@ export default defineComponent({
       spring_rate: 50,
       back_force: 0,
 
-      selectMode: 'STD',
+      selectMode: 'SPR', // 弹力
       showResult: false,
       hasFirstInit: false, // 是否已经获取初始值力度
       isPlaying: false,
@@ -474,6 +477,9 @@ export default defineComponent({
       state.showResult = false
       // store.commit('setShowResult', false)
     }
+    function goMenu () {
+      router.push({ name: 'ProFitMenu' })
+    }
 
     function overLength (data: number | string) {
       return (data + '').length > 5
@@ -554,6 +560,7 @@ export default defineComponent({
       // showResult,
       handleSelectMode,
       goBack,
+      goMenu,
       connectStatus,
     }
   },

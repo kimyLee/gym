@@ -27,6 +27,8 @@ import { useStore } from 'vuex'
 
 import router from '@/router'
 
+import { useRoute } from 'vue-router'
+
 declare global {
   interface Window {
     getTimer: any,
@@ -67,8 +69,14 @@ export default defineComponent({
       state.currentPM = APM
     }
 
+    const route = useRoute()
+
     const goHome = () => {
-      router.push({ name: 'Menu1' })
+      if (route.name === 'Menu1') {
+        router.push({ name: 'Start' })
+      } else {
+        router.push({ name: 'Menu1' })
+      }
     }
 
     // 循环获取时间
